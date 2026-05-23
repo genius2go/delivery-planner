@@ -1,0 +1,342 @@
+[
+ {
+  "name": "Miami Beach / Sunset Harbour",
+  "lat": 25.793,
+  "lon": -80.141,
+  "state": "FL",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Sunset Harbour Yacht Club. Home base. Lincoln Rd walkable.",
+  "verify": false
+ },
+ {
+  "name": "Boca Raton / Hillsboro Inlet",
+  "lat": 26.257,
+  "lon": -80.081,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "When EXITING, keep close to the starboard/right side of the channel \u2014 bridge operator's advice (May 18, 2026) with waves breaking in the channel. Fair-weather inlet; respect a building swell.",
+  "verify": false
+ },
+ {
+  "name": "Lake Worth / Palm Beach",
+  "lat": 26.772,
+  "lon": -80.044,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Lake Worth Inlet \u2014 deep, all-weather. Gulf Stream close to shore Palm Beach\u2192Canaveral; stacks up in NE wind.",
+  "verify": false
+ },
+ {
+  "name": "Fort Pierce",
+  "lat": 27.467,
+  "lon": -80.317,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Often called best all-weather inlet on the East Coast. Downtown marina walkable. Natural mid-leg bailout ~110nm from Palm Beach.",
+  "verify": false
+ },
+ {
+  "name": "Cape Canaveral / Port Canaveral",
+  "lat": 28.408,
+  "lon": -80.618,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Deep commercial inlet, easy all-weather, good fuel. Watch cruise-ship traffic + security zone.",
+  "verify": false
+ },
+ {
+  "name": "St. Augustine",
+  "lat": 29.892,
+  "lon": -81.298,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Bar SHOALS and shifts \u2014 cross at/near high tide ONLY. Favor current ATONs over chart. City Marina downtown by Bridge of Lions.",
+  "verify": false
+ },
+ {
+  "name": "Fernandina Beach",
+  "lat": 30.671,
+  "lon": -81.464,
+  "state": "FL",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Deep, well-marked inlet. Fuel + protected overnight. Used as fog-diversion before St. Aug. Good contingency.",
+  "verify": false
+ },
+ {
+  "name": "Brunswick / St. Simons",
+  "lat": 31.135,
+  "lon": -81.497,
+  "state": "GA",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Brunswick Landing 'Velcro Marina.' ~130nm from St. Aug. WWII hurricane hole. Solid mid-leg bailout.",
+  "verify": false
+ },
+ {
+  "name": "Hilton Head / Harbour Town",
+  "lat": 32.139,
+  "lon": -80.804,
+  "state": "SC",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Sea Pines. Harbourmaster Leslie (843) 363-8335. Rick: great food at the Country Club, walking distance. Weather bailout/fuel.",
+  "verify": false
+ },
+ {
+  "name": "Charleston",
+  "lat": 32.78,
+  "lon": -79.925,
+  "state": "SC",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Deep, well-marked all-weather harbor. Natural multi-day weather hold, full services. 5+ ft tidal range \u2014 real current on arrival. WARNING (Rick): do NOT run the ICW between here and Southport \u2014 it's poorly documented, markers off by 30-40 yards from actual deep water (confirmed by infrared/heat survey). Run outside on this stretch.",
+  "verify": false
+ },
+ {
+  "name": "Winyah Bay / Georgetown",
+  "lat": 33.205,
+  "lon": -79.187,
+  "state": "SC",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Sea buoy well offshore; jetties demand respect on building southerly. Workable but not a casual entry.",
+  "verify": false
+ },
+ {
+  "name": "Southport / Cape Fear River",
+  "lat": 33.915,
+  "lon": -78.02,
+  "state": "NC",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Cape Fear River entrance deep/commercial. Safe Harbor South Harbour Village \u2014 ask for Bill Gregory (910) 352-8469. Joseph's Italian Bistro at marina; Rick's pick Home Run Place north of bridge. WARNING (Rick): do NOT run the ICW between here and Charleston \u2014 poorly documented, markers off by 30-40 yards from actual deep water (confirmed by infrared/heat survey). Run outside on this stretch.",
+  "verify": false
+ },
+ {
+  "name": "Wrightsville / Masonboro Inlet",
+  "lat": 34.18,
+  "lon": -77.819,
+  "state": "NC",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Masonboro Inlet \u2014 enter mid-to-high tide. Check Aqua Map shoaling MM 293.7. Hybrid ICW route option here.",
+  "verify": false
+ },
+ {
+  "name": "Beaufort / Morehead City",
+  "lat": 34.72,
+  "lon": -76.7,
+  "state": "NC",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Beaufort Inlet deep all-weather commercial. KEY staging point for the Hatteras rounding. Full services, easy to sit out weather. Morehead City Yacht Basin dockmaster (252) 726-6862.",
+  "verify": false
+ },
+ {
+  "name": "Cape Hatteras (offshore rounding)",
+  "lat": 35.22,
+  "lon": -75.53,
+  "state": "NC",
+  "type": "hazard",
+  "allweather": false,
+  "notes": "NOT a stop \u2014 the critical offshore rounding. Gulf Stream close offshore; wind-against-current sea builds fast over Diamond Shoals. Do NOT leave Beaufort without a confirmed window.",
+  "verify": false
+ },
+ {
+  "name": "Coinjock (ICW)",
+  "lat": 36.349,
+  "lon": -75.948,
+  "state": "NC",
+  "type": "icw",
+  "allweather": true,
+  "notes": "ICW MM 50, inside route. Dock EAST side (restaurant access). 32oz prime rib \u2014 call ahead (252) 453-3271. Tip dock hands in CASH not card (adds 20%).",
+  "verify": false
+ },
+ {
+  "name": "Oregon Inlet",
+  "lat": 35.772,
+  "lon": -75.524,
+  "state": "NC",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Shoal and treacherous \u2014 treat as a position, not a reliable bailout.",
+  "verify": false
+ },
+ {
+  "name": "Norfolk / Waterside (Hampton Roads)",
+  "lat": 36.847,
+  "lon": -76.293,
+  "state": "VA",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Waterside Marina downtown (757) 625-3625, new floating docks, MM 0. Heavy Navy/commercial traffic \u2014 they have right of way, monitor VHF 16. Bluewater Hampton backup (757) 723-6774.",
+  "verify": false
+ },
+ {
+  "name": "Great Bridge Lock (ICW)",
+  "lat": 36.724,
+  "lon": -76.244,
+  "state": "VA",
+  "type": "icw",
+  "allweather": true,
+  "notes": "NB opens on the hour, SB at :30. Miss it by 3 min = wait an hour. Gilmerton/NS#7 RR bridge pair nearby \u2014 6kts, watch lights (green=clear, red=hold). 'The pair that nearly came down on you.'",
+  "verify": false
+ },
+ {
+  "name": "Ocean City MD",
+  "lat": 38.328,
+  "lon": -75.091,
+  "state": "MD",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Notoriously shoal/dangerous in any onshore swell. Fair-weather ONLY.",
+  "verify": false
+ },
+ {
+  "name": "Cape May NJ",
+  "lat": 38.969,
+  "lon": -74.908,
+  "state": "NJ",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Deep reliable inlet, the safety valve for the NJ coast. South Jersey Marina (609) 884-2400 \u2014 books up fast. Lobster House next door. Enter from ocean side.",
+  "verify": false
+ },
+ {
+  "name": "Atlantic City NJ",
+  "lat": 39.355,
+  "lon": -74.418,
+  "state": "NJ",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "~30nm past Cape May. Golden Nugget (big basin) or Kammerman's (quieter, family-run). Absecon Inlet. Safety: stay near marina/boardwalk after dark.",
+  "verify": false
+ },
+ {
+  "name": "Barnegat Light NJ",
+  "lat": 39.766,
+  "lon": -74.11,
+  "state": "NJ",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "MOST CRITICAL INLET. Previous incident here. Enter mid-FLOOD only, MORNING only, favor north jetty. Never on ebb, never afternoon, no NE swell. Bayview Harbor.",
+  "verify": false
+ },
+ {
+  "name": "Manasquan NJ",
+  "lat": 40.103,
+  "lon": -74.034,
+  "state": "NJ",
+  "type": "inlet",
+  "allweather": false,
+  "notes": "Better than Barnegat but tight. One of the few workable NJ inlets.",
+  "verify": true
+ },
+ {
+  "name": "New York Harbor / Sandy Hook",
+  "lat": 40.467,
+  "lon": -74.01,
+  "state": "NY",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Ambrose Channel \u2014 heavy ship traffic, right of way, monitor VHF 16. Time Sandy Hook for fair current.",
+  "verify": false
+ },
+ {
+  "name": "Liberty Landing (NYC)",
+  "lat": 40.711,
+  "lon": -74.046,
+  "state": "NJ",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Jersey City, Liberty State Park. Calm basin, ferry to Manhattan. Dockmaster Janer (201) 985-8000. NYC overnight or weather bailout.",
+  "verify": false
+ },
+ {
+  "name": "Port Washington NY (LI Sound)",
+  "lat": 40.834,
+  "lon": -73.722,
+  "state": "NY",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Manhasset Bay, protected. Municipal & Safe Harbor Capri. LIRR to Manhattan 35 min. Hell Gate runs hard \u2014 time the East River for fair current.",
+  "verify": false
+ },
+ {
+  "name": "The Race / Plum Gut (LI Sound)",
+  "lat": 41.23,
+  "lon": -72.06,
+  "state": "CT",
+  "type": "hazard",
+  "allweather": false,
+  "notes": "NOT a stop \u2014 current gate at the east end of LI Sound. Runs hard; time for fair current.",
+  "verify": false
+ },
+ {
+  "name": "Montauk NY",
+  "lat": 41.072,
+  "lon": -71.938,
+  "state": "NY",
+  "type": "inlet",
+  "allweather": true,
+  "notes": "Lake Montauk \u2014 straightforward entry, good fuel dock. ~130nm staging option between NJ and New England.",
+  "verify": false
+ },
+ {
+  "name": "Block Island RI",
+  "lat": 41.171,
+  "lon": -71.578,
+  "state": "RI",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Great Salt Pond. Classic New England stop.",
+  "verify": true
+ },
+ {
+  "name": "Newport RI",
+  "lat": 41.487,
+  "lon": -71.326,
+  "state": "RI",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Narragansett Bay \u2014 easy, well-marked entry. Home water for the New England end.",
+  "verify": false
+ },
+ {
+  "name": "Cape Cod Canal",
+  "lat": 41.745,
+  "lon": -70.616,
+  "state": "MA",
+  "type": "canal",
+  "allweather": true,
+  "notes": "Connects Buzzards Bay & Cape Cod Bay. Currents top 4-5kts. Monitor VHF 13 entire transit, hail Control 16 / working 12/14. 10mph limit, no wake \u2014 they cite violators. Time for slack/fair current.",
+  "verify": false
+ },
+ {
+  "name": "Buzzards Bay / Falmouth MA",
+  "lat": 41.647,
+  "lon": -70.636,
+  "state": "MA",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "East Falmouth / Green Pond. New England base. Falmouth Marine & MacDougalls on Dockwa.",
+  "verify": false
+ },
+ {
+  "name": "Nantucket MA",
+  "lat": 41.285,
+  "lon": -70.097,
+  "state": "MA",
+  "type": "harbor",
+  "allweather": true,
+  "notes": "Nantucket Boat Basin (508) 325-1350, 2-night min, concierge. Nantucket Sound builds with afternoon SW against ebb \u2014 arrive before midday.",
+  "verify": false
+ }
+]
