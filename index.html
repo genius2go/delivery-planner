@@ -67,6 +67,9 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
 .seq-item .nm{flex:1;font-weight:600;font-size:14px}
 .seq-item .x{cursor:pointer;color:var(--rust);font-weight:700;padding:0 6px}
 .seq-item.drag{opacity:.4}
+.seq-item.done{border-left:4px solid var(--ok);background:linear-gradient(90deg,rgba(63,122,63,.06),#fff 12%)}
+.doneflag{font-size:11px;color:var(--ok);font-weight:700;margin-left:4px}
+.confirmbtn{flex-shrink:0}
 .summ{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:14px}
 .sc{flex:1;min-width:90px;background:var(--paper2);border:1px solid var(--line);
   border-left:4px solid var(--teal);border-radius:8px;padding:9px 12px}
@@ -87,9 +90,12 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
 @media print{.printhead{display:block;margin-bottom:14px;border-bottom:2px solid var(--ink);padding-bottom:8px}
   .printhead h1{color:var(--ink);font-size:22px}.printhead .pm{font-size:13px;color:#444}}
 </style></head><body>
-<header><div class="wrap">
-  <div class="kick">Mobile Marine &middot; Passage Tool</div>
-  <h1>Delivery Planner</h1>
+<header><div class="wrap" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px">
+  <div>
+    <div class="kick">Mobile Marine &middot; Passage Tool</div>
+    <h1>Delivery Planner</h1>
+  </div>
+  <a href="GUIDE_owner.html" target="_blank" rel="noopener" style="color:var(--brass-lt);font-size:13px;text-decoration:none;border:1px solid var(--brass-lt);border-radius:7px;padding:6px 12px;white-space:nowrap;flex-shrink:0">&#63; How to use this</a>
 </div></header>
 <div class="wrap">
 
@@ -110,12 +116,12 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
 
   <div class="card noprint">
     <h2>2 &middot; Pick Stops</h2>
-    <p class="muted" style="margin-bottom:10px">Tap the stops this client wants. They auto-sequence by the corridor; you can reorder freely below for Plan B/C/D when weather changes.</p>
+    <p class="muted" style="margin-bottom:10px">Tap the stops this client wants. They auto-sequence north-to-south along the corridor; you can rearrange or add/remove them anytime as weather and conditions change.</p>
     <div class="picker" id="picker"></div>
   </div>
 
   <div class="card noprint" id="seqCard">
-    <h2>3 &middot; Sequence &mdash; drag to reorder for Plan B/C/D</h2>
+    <h2>3 &middot; Sequence &mdash; drag to reorder, or add/remove as conditions change</h2>
     <div id="seq"></div>
     <p class="muted" id="seqEmpty">No stops selected yet.</p>
     <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)">
@@ -176,6 +182,39 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
       </div>
       <p class="muted" style="margin-top:8px">This appends a dated note to the stop's existing notes &mdash; it doesn't overwrite what's there.</p>
     </div>
+  </div>
+
+  <div class="card noprint" id="reportCard">
+    <details>
+    <summary style="cursor:pointer;list-style:none"><h2 style="display:inline;border:none;margin:0">&#9656; &#128221; Delivery Report &mdash; record a completed trip</h2></summary>
+    <div style="margin-top:12px">
+    <p class="muted" style="margin-bottom:10px">After a delivery, capture how it actually went. Generates a clean report you can print/PDF for the client, and saves a dated entry to your trip log (trips.json) on GitHub.</p>
+    <div class="row">
+      <div style="flex:2"><label>Vessel</label><input id="rp_vessel" placeholder="e.g. M/V Second Wind"></div>
+      <div style="flex:2"><label>Client / Owner</label><input id="rp_client" placeholder="e.g. John Smith"></div>
+    </div>
+    <div class="row">
+      <div><label>Departed (date)</label><input id="rp_dep" type="date"></div>
+      <div><label>Arrived (date)</label><input id="rp_arr" type="date"></div>
+    </div>
+    <div class="row">
+      <div style="flex:2"><label>From &rarr; To</label><input id="rp_route" placeholder="e.g. Boca Raton, FL → Newport, RI"></div>
+      <div><label>Crew aboard</label><input id="rp_crew" placeholder="e.g. Capt. P. + 1 mate"></div>
+    </div>
+    <label>Summary &mdash; how it actually went (weather holds, route changes, notable events)</label>
+    <textarea id="rp_summary" class="notebox" style="min-height:90px" placeholder="e.g. Departed Boca on a clean window. Held 2 days at Beaufort for the Hatteras rounding. Fueled Charleston + Cape May. Uneventful otherwise; arrived Newport on schedule."></textarea>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;cursor:pointer">
+      <input type="checkbox" id="rp_incnotes" style="width:auto" onchange="if(document.getElementById('reportPreview').style.display!=='none')generateReport()">
+      Include per-stop notes in the report (off = clean client version; your notes are always kept in the trip log either way)
+    </label>
+    <div style="margin-top:12px">
+      <button class="btn sm" onclick="generateReport()">Preview report</button>
+      <button class="btn sm sec" onclick="saveTrip()">Save to trip log &rarr; GitHub</button>
+      <span class="muted" id="rpMsg"></span>
+    </div>
+    <div id="reportPreview" style="display:none;margin-top:14px;border-top:1px dashed var(--line);padding-top:14px"></div>
+    </div>
+    </details>
   </div>
 
   <div class="card noprint" id="masterCard">
@@ -376,16 +415,55 @@ function addPort(){
   renderPicker(); renderSeq(); renderAddedPorts();
 }
 
+// confirmed[stopName] = {date:'YYYY-MM-DD', note:'...'} — the as-run trip log
+let confirmed = {};
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
 function renderSeq(){
   const c=document.getElementById('seq'); c.innerHTML='';
   document.getElementById('seqEmpty').style.display=selected.length?'none':'block';
   selected.forEach((idx,pos)=>{
     const s=STOPS[idx];
+    const isDone=!!confirmed[s.name];
     const d=document.createElement('div');
-    d.className='seq-item'; d.draggable=true; d.dataset.pos=pos;
-    d.innerHTML=`<span class="h">&#9776;</span><span class="nm">${pos+1}. ${s.name}</span>
-      <span class="x" title="remove">&times;</span>`;
+    d.className='seq-item'+(isDone?' done':''); d.draggable=true; d.dataset.pos=pos;
+    d.style.flexWrap='wrap';
+    d.innerHTML=`<span class="h">&#9776;</span>
+      <span class="nm">${pos+1}. ${s.name} ${isDone?`<span class="doneflag">&#10003; ${confirmed[s.name].date}</span>`:''}</span>
+      <button class="btn sm ${isDone?'sec':''} confirmbtn">${isDone?'Edit':'&#10003; Confirm'}</button>
+      <span class="x" title="remove">&times;</span>
+      <div class="confirmpanel" style="display:none;width:100%;margin-top:8px">
+        <div class="row">
+          <div><label>Date arrived</label><input type="date" class="cf-date" value="${isDone?confirmed[s.name].date:todayStr()}"></div>
+          <div style="flex:2"><label>Quick note (how it went)</label><input class="cf-note" placeholder="e.g. easy entry, fueled, quiet night" value="${isDone?(confirmed[s.name].note||'').replace(/"/g,'&quot;'):''}"></div>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn sm cf-save">Save &mdash; mark visited</button>
+          ${isDone?'<button class="btn sm sec cf-unconfirm">Unconfirm</button>':''}
+          <span class="muted cf-msg"></span>
+        </div>
+      </div>`;
+    // remove from plan
     d.querySelector('.x').onclick=()=>{selected.splice(pos,1);renderPicker();renderSeq();};
+    // toggle confirm panel
+    d.querySelector('.confirmbtn').onclick=()=>{
+      const p=d.querySelector('.confirmpanel');
+      p.style.display=p.style.display==='none'?'block':'none';
+    };
+    // save confirmation
+    d.querySelector('.cf-save').onclick=async()=>{
+      const date=d.querySelector('.cf-date').value||todayStr();
+      const note=d.querySelector('.cf-note').value.trim();
+      confirmed[s.name]={date,note};
+      d.querySelector('.cf-msg').textContent=' — saving…';
+      const ok=await saveActiveTrip();
+      d.querySelector('.cf-msg').textContent=ok?' — saved':' — saved locally (no GitHub)';
+      renderSeq();
+    };
+    const unc=d.querySelector('.cf-unconfirm');
+    if(unc) unc.onclick=async()=>{ delete confirmed[s.name]; await saveActiveTrip(); renderSeq(); };
+    // drag reorder
     d.addEventListener('dragstart',e=>{d.classList.add('drag');e.dataTransfer.setData('t',pos)});
     d.addEventListener('dragend',()=>d.classList.remove('drag'));
     d.addEventListener('dragover',e=>e.preventDefault());
@@ -504,7 +582,164 @@ function exportPlan(){
 
 document.getElementById('dir').addEventListener('change',()=>{selected.sort(corridorOrder);renderPicker();renderSeq();});
 
-/* ---------- GitHub master-list sync ---------- */
+// -------- Delivery Report / Trip Log --------
+function reportData(){
+  return {vessel:document.getElementById('rp_vessel').value.trim(),
+    client:document.getElementById('rp_client').value.trim(),
+    departed:document.getElementById('rp_dep').value,
+    arrived:document.getElementById('rp_arr').value,
+    route:document.getElementById('rp_route').value.trim(),
+    crew:document.getElementById('rp_crew').value.trim(),
+    summary:document.getElementById('rp_summary').value.trim()};
+}
+function reportHtml(d){
+  const fmt=s=>s||'—';
+  // assemble the as-run stop log from confirmed stops, in trip order
+  const visited=selected.map(i=>STOPS[i]).filter(s=>confirmed[s.name]);
+  // include any confirmed stops not in current selection too (safety)
+  Object.keys(confirmed).forEach(nm=>{
+    if(!visited.find(s=>s.name===nm)){const s=STOPS.find(x=>x.name===nm); if(s)visited.push(s);}
+  });
+  // sort visited by their confirmed date
+  visited.sort((a,b)=>(confirmed[a.name].date||'').localeCompare(confirmed[b.name].date||''));
+  let stopsHtml='';
+  if(visited.length){
+    const incNotes=document.getElementById('rp_incnotes') && document.getElementById('rp_incnotes').checked;
+    stopsHtml='<p style="margin-top:10px"><b>Stops (as run)</b></p><ol style="margin:6px 0 0 18px">'+
+      visited.map(s=>{const cf=confirmed[s.name];
+        return `<li style="margin:5px 0"><b>${s.name}</b> &mdash; ${cf.date}${(incNotes&&cf.note)?`<br><span style="font-size:13px;color:#555">${cf.note}</span>`:''}</li>`;
+      }).join('')+'</ol>';
+  }
+  return `<div class="printhead" style="display:block">
+      <h1 style="color:var(--ink)">Delivery Report</h1>
+      <div class="pm">${fmt(d.vessel)}${d.client?' · for '+d.client:''} · prepared ${new Date().toLocaleDateString()}</div>
+    </div>
+    <div style="font-size:14px;line-height:1.7">
+      <p><b>Route:</b> ${fmt(d.route)}</p>
+      <p><b>Departed:</b> ${fmt(d.departed)} &nbsp; <b>Arrived:</b> ${fmt(d.arrived)}</p>
+      <p><b>Crew:</b> ${fmt(d.crew)}</p>
+      ${stopsHtml}
+      <p style="margin-top:10px"><b>Summary</b><br>${d.summary?d.summary.replace(/\n/g,'<br>'):'—'}</p>
+    </div>`;
+}
+function generateReport(){
+  const d=reportData();
+  if(!d.vessel&&!d.route){document.getElementById('rpMsg').textContent=' — fill in at least the vessel or route';return;}
+  const box=document.getElementById('reportPreview');
+  box.innerHTML=reportHtml(d)+
+    `<div class="noprint" style="margin-top:12px"><button class="btn sm" onclick="printReport()">Print / Save PDF</button></div>`;
+  box.style.display='block';
+  box.scrollIntoView({behavior:'smooth'});
+}
+function printReport(){
+  // print just the report: temporarily flag the body
+  const box=document.getElementById('reportPreview');
+  const w=window.open('','_blank');
+  if(!w){window.print();return;}
+  w.document.write(`<html><head><title>Delivery Report</title>
+    <style>body{font-family:Georgia,serif;color:#16242f;max-width:700px;margin:30px auto;padding:0 20px;line-height:1.7}
+    h1{font-size:24px;border-bottom:2px solid #16242f;padding-bottom:6px}
+    .pm{font-size:13px;color:#555;margin-bottom:16px}</style></head><body>${box.innerHTML.replace(/<div class="noprint"[\s\S]*?<\/div>/,'')}</body></html>`);
+  w.document.close(); w.focus(); setTimeout(()=>w.print(),250);
+}
+async function saveTrip(){
+  const msg=document.getElementById('rpMsg');
+  const d=reportData();
+  if(!d.vessel&&!d.route){msg.textContent=' — fill in at least the vessel or route first';return;}
+  const c=ghCfg();
+  if(!c.token){msg.textContent=' — no token on this device (read-only)';return;}
+  if(!c.repo){msg.textContent=' — set the repo in GitHub settings first';return;}
+  msg.textContent=' — saving to trip log…';
+  const tripsPath='trips.json';
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/${tripsPath}`;
+    const h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token};
+    const rg=await fetch(url+`?ref=${c.branch}`,{headers:h});
+    let trips=[],sha=undefined;
+    if(rg.ok){const j=await rg.json();sha=j.sha;
+      try{trips=JSON.parse(decodeURIComponent(escape(atob(j.content))));}catch(e){trips=[];}}
+    else if(rg.status!==404){msg.textContent=` — couldn't read trip log (${rg.status})`;return;}
+    const visitedStops=Object.keys(confirmed).map(nm=>({name:nm,...confirmed[nm]}))
+      .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const entry={...d, stops:visitedStops, logged:new Date().toISOString()};
+    trips.push(entry);
+    const body={message:`Trip: ${d.vessel||d.route} ${d.arrived||''}`.trim(),branch:c.branch,
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(trips,null,1))))};
+    if(sha)body.sha=sha;
+    const rp=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify(body)});
+    if(!rp.ok){msg.textContent=` — save failed (${rp.status}) — check token has write access`;return;}
+    msg.textContent=` — trip saved to log (${trips.length} total)`;
+    // offer to clear the in-progress active trip now that it's archived
+    if(Object.keys(confirmed).length && confirm('Trip saved to log. Clear the in-progress trip to start fresh for the next delivery?')){
+      await clearActiveTrip();
+    }
+  }catch(e){ msg.textContent=' — error: '+e.message; }
+}
+
+// -------- Active trip (in-progress) persistence --------
+// Saves the current plan + confirmed stops to active_trip.json on each confirm,
+// so a multi-day trip survives closing/reopening across devices.
+async function saveActiveTrip(){
+  const c=ghCfg();
+  if(!c.token||!c.repo) return false; // no GitHub: confirmed stays in memory this session
+  const payload={
+    updated:new Date().toISOString(),
+    selected:selected.map(i=>STOPS[i].name),
+    confirmed:confirmed
+  };
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/active_trip.json`;
+    const h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token};
+    const rg=await fetch(url+`?ref=${c.branch}`,{headers:h});
+    let sha=undefined;
+    if(rg.ok){const j=await rg.json();sha=j.sha;}
+    const body={message:'Update active trip',branch:c.branch,
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,1))))};
+    if(sha)body.sha=sha;
+    const rp=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify(body)});
+    return rp.ok;
+  }catch(e){ return false; }
+}
+async function loadActiveTrip(){
+  const c=ghCfg();
+  if(!c.repo) return;
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/active_trip.json?ref=${c.branch}`;
+    const h={'Accept':'application/vnd.github+json'};
+    if(c.token)h['Authorization']='Bearer '+c.token;
+    const r=await fetch(url,{headers:h});
+    if(!r.ok) return; // no active trip yet (404) — fine
+    const j=await r.json();
+    const p=JSON.parse(decodeURIComponent(escape(atob(j.content))));
+    if(p&&p.confirmed) confirmed=p.confirmed;
+    // restore the selected route by stop name (if those stops exist)
+    if(p&&Array.isArray(p.selected)){
+      const bySel=[];
+      p.selected.forEach(nm=>{const idx=STOPS.findIndex(s=>s.name===nm); if(idx>=0)bySel.push(idx);});
+      if(bySel.length){ selected=bySel; }
+    }
+    renderSeq(); renderPicker();
+    const n=Object.keys(confirmed).length;
+    if(n){ const m=document.getElementById('ghMsg'); if(m)m.textContent=` — resumed active trip (${n} stops confirmed)`; }
+  }catch(e){}
+}
+async function clearActiveTrip(){
+  const c=ghCfg();
+  confirmed={};
+  if(!c.token||!c.repo){renderSeq();return;}
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/active_trip.json`;
+    const h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token};
+    const rg=await fetch(url+`?ref=${c.branch}`,{headers:h});
+    if(rg.ok){const j=await rg.json();
+      await fetch(url,{method:'DELETE',headers:h,
+        body:JSON.stringify({message:'Clear active trip',branch:c.branch,sha:j.sha})});
+    }
+  }catch(e){}
+  renderSeq();
+}
+
+
 const GH_KEYS=['ghRepo','ghBranch','ghPath','ghToken'];
 function ghLoadSettings(){
   GH_KEYS.forEach(k=>{
@@ -773,12 +1008,13 @@ renderPicker();renderSeq();renderAddedPorts();
 // Auto-reload the live master list on startup so you always see your latest stops.
 // If no repo is configured (e.g. a shared/read-only copy), this silently does nothing
 // and the baked-in list stays as the offline fallback.
-(function autoReload(){
+(async function autoReload(){
   const c=ghCfg();
-  if(!c.repo) return; // nothing configured — use baked-in list
+  if(!c.repo){ return; } // nothing configured — use baked-in list
   const msg=document.getElementById('ghMsg');
   if(msg) msg.textContent=' — syncing latest stops…';
-  loadMaster();
+  await loadMaster();
+  await loadActiveTrip(); // resume any in-progress trip
 })();
 </script>
 </body></html>
