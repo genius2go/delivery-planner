@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Planner</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --ink:#16242f;--ink2:#22384a;--paper:#f7f2e7;--paper2:#ece3cf;
+  --brass:#9e6b1f;--brass-lt:#c89a4a;--teal:#1a6b6f;--teal-lt:#2a8c91;
+  --rust:#a23a22;--rust-lt:#c75a3f;--line:#d8c9a4;--ok:#3f7a3f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--ink);
+  background:var(--paper);line-height:1.5;padding-bottom:60px}
+header{background:linear-gradient(160deg,var(--ink),var(--ink2));color:var(--paper);
+  padding:22px 20px;border-bottom:4px solid var(--brass)}
+.kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass-lt)}
+h1{font-size:25px;font-weight:700;margin-top:4px}
+.wrap{max-width:920px;margin:0 auto;padding:0 18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:18px;
+  margin:16px 0;box-shadow:0 1px 5px rgba(22,36,47,.06)}
+h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);
+  margin-bottom:12px;font-weight:700}
+label{display:block;font-size:12px;color:#5a4a30;margin:9px 0 3px;font-weight:600}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+  font-size:15px;font-family:inherit;background:var(--paper)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>div{flex:1;min-width:130px}
+.btn{display:inline-block;background:var(--brass);color:#fff;border:none;border-radius:8px;
+  padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+  letter-spacing:.03em;transition:.15s}
+.btn:hover{background:#86591a}
+.btn.sec{background:transparent;color:var(--ink2);border:1px solid var(--line)}
+.btn.sec:hover{background:var(--paper2)}
+.btn.sm{padding:6px 12px;font-size:12px}
+/* stop picker */
+.picker{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:640px){.picker{grid-template-columns:1fr}}
+.stop{border:1px solid var(--line);border-radius:8px;padding:9px 11px;cursor:pointer;
+  background:var(--paper);transition:.12s;display:flex;align-items:flex-start;gap:9px}
+.stop:hover{border-color:var(--teal-lt);background:#fff}
+.stop.on{background:#fff;border-color:var(--brass);border-left:4px solid var(--brass)}
+.stop input{width:auto;margin-top:3px;flex-shrink:0}
+.stop .sn{font-weight:600;font-size:14px}
+.stop .st{font-size:11px;color:#7a6a4a}
+.tag{display:inline-block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+  padding:1px 6px;border-radius:4px;margin-left:5px;vertical-align:middle}
+.t-aw{background:#e3efe3;color:var(--ok)}
+.t-fw{background:#f6e3dd;color:var(--rust)}
+.t-hz{background:var(--rust);color:#fff}
+.t-vf{background:#fcf2d8;color:var(--brass)}
+/* sequence / plan */
+.leg{display:flex;gap:13px;background:#fff;border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;margin:9px 0;align-items:flex-start}
+.leg.warn{border-left:5px solid var(--rust);background:linear-gradient(90deg,rgba(162,58,34,.05),#fff 10%)}
+.leg-n{font-size:22px;font-weight:800;color:var(--brass-lt);min-width:30px;text-align:center}
+.leg.warn .leg-n{color:var(--rust)}
+.leg-rt{font-weight:700;font-size:16px}
+.leg-meta{font-size:12px;margin:2px 0}
+.leg-dist{font-weight:700;color:var(--teal)}
+.leg-warn-txt{color:var(--rust);font-weight:700;font-size:12px;margin-top:3px}
+.leg-note{font-size:13px;color:#34454f;margin-top:5px}
+.seq-item{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);
+  border-radius:8px;padding:9px 11px;margin:6px 0}
+.seq-item .h{cursor:grab;color:var(--brass-lt);font-size:18px;user-select:none}
+.seq-item .nm{flex:1;font-weight:600;font-size:14px}
+.seq-item .x{cursor:pointer;color:var(--rust);font-weight:700;padding:0 6px}
+.seq-item.drag{opacity:.4}
+.summ{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:14px}
+.sc{flex:1;min-width:90px;background:var(--paper2);border:1px solid var(--line);
+  border-left:4px solid var(--teal);border-radius:8px;padding:9px 12px}
+.sc b{display:block;font-size:21px;color:var(--ink2)}
+.sc span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+.hide{display:none}
+.muted{font-size:12px;color:#8a7a5a;font-style:italic}
+.notebox{width:100%;min-height:60px;padding:9px;border:1px solid var(--line);border-radius:7px;
+  font-family:inherit;font-size:13px;margin-top:6px;resize:vertical}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+@media print{
+  header,.noprint{display:none!important}
+  body{background:#fff;padding:0}
+  .card{box-shadow:none;border:none;padding:0;margin:10px 0}
+  .leg{break-inside:avoid}
+}
+.printhead{display:none}
+@media print{.printhead{display:block;margin-bottom:14px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+  .printhead h1{color:var(--ink);font-size:22px}.printhead .pm{font-size:13px;color:#444}}
+</style></head><body>
+<header><div class="wrap">
+  <div class="kick">Mobile Marine &middot; Passage Tool</div>
+  <h1>Delivery Planner</h1>
+</div></header>
+<div class="wrap">
+
+  <div class="card noprint" id="setupCard">
+    <h2>1 &middot; Client &amp; Boat</h2>
+    <div class="row">
+      <div><label>Client / Vessel</label><input id="vessel" placeholder="e.g. M/V Second Wind"></div>
+      <div><label>Captain hiring</label><input id="client" placeholder="e.g. John Smith"></div>
+    </div>
+    <div class="row">
+      <div><label>Max range per leg (nm)</label><input id="range" type="number" value="200"></div>
+      <div><label>Cruise speed (kts)</label><input id="speed" type="number" value="25"></div>
+    </div>
+    <label style="margin-top:14px">Direction</label>
+    <select id="dir"><option value="nb">Northbound (FL &rarr; New England)</option>
+      <option value="sb">Southbound (New England &rarr; FL)</option></select>
+  </div>
+
+  <div class="card noprint">
+    <h2>2 &middot; Pick Stops</h2>
+    <p class="muted" style="margin-bottom:10px">Tap the stops this client wants. They auto-sequence by the corridor; you can reorder freely below for Plan B/C/D when weather changes.</p>
+    <div class="picker" id="picker"></div>
+  </div>
+
+  <div class="card noprint" id="seqCard">
+    <h2>3 &middot; Sequence &mdash; drag to reorder for Plan B/C/D</h2>
+    <div id="seq"></div>
+    <p class="muted" id="seqEmpty">No stops selected yet.</p>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)">
+      <h2 style="color:var(--rust)">&#9875; Underway &mdash; duck into an unplanned port</h2>
+      <p class="muted" style="margin-bottom:8px">Weather turned, need fuel, want a break? Add a port and it drops into the sequence. Enter a position if you have it, or just a name now and fix the position later at the dock.</p>
+      <div class="row">
+        <div style="flex:2"><label>Port name</label><input id="newName" placeholder="e.g. Georgetown SC"></div>
+        <div><label>Lat (optional)</label><input id="newLat" type="number" step="0.001" placeholder="33.36"></div>
+        <div><label>Lon (optional)</label><input id="newLon" type="number" step="0.001" placeholder="-79.28"></div>
+      </div>
+      <label>Quick note now (why you stopped)</label>
+      <input id="newNote" placeholder="e.g. ducked in for fuel — easy entry, rough outside">
+      <div style="margin-top:10px"><button class="btn sm" onclick="addPort()">+ Add this port</button>
+        <span class="muted" id="addMsg"></span></div>
+    </div>
+  </div>
+
+  <div class="toolbar noprint">
+    <button class="btn" onclick="generate()">Generate Plan &darr;</button>
+    <button class="btn sec" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn sec" onclick="exportPlan()">Export Plan (.json)</button>
+  </div>
+
+  <div class="card" id="planCard" style="display:none">
+    <div class="printhead" id="printhead"></div>
+    <h2 class="noprint">Generated Plan</h2>
+    <div class="summ" id="planSumm"></div>
+    <div id="planLegs"></div>
+    <details class="noprint" id="mapDetails" style="margin-top:14px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--teal);font-weight:700">&#9776; Show route map</summary>
+      <p class="muted" style="margin:8px 0">Your chosen route (brass) over the actual tracks I've run this corridor (faint teal). Needs internet for the chart background.</p>
+      <div id="map" style="height:440px;border:1px solid var(--line);border-radius:9px;margin-top:8px"></div>
+    </details>
+  </div>
+
+  <div class="card noprint" id="masterCard">
+    <h2>&#9881; Master List &mdash; save new knowledge (your devices only)</h2>
+    <p class="muted" style="margin-bottom:10px">Ports you added underway live only in this plan until you deliberately commit them to the shared master list. This needs your GitHub token &mdash; without one, the planner still reads the master list and builds plans, it just can't write back. Anyone you share the tool with gets read-only.</p>
+    <div id="addedPorts"></div>
+
+    <details style="margin-top:14px" id="manageDetails">
+      <summary style="cursor:pointer;font-size:13px;color:var(--teal);font-weight:700">&#9999; Add, edit, or remove a stop</summary>
+      <div style="margin-top:12px">
+        <label>Choose a stop to edit, or add a new one</label>
+        <select id="editPick" onchange="loadStopForm()">
+          <option value="-1">+ Add a new stop</option>
+        </select>
+        <div class="row" style="margin-top:10px">
+          <div style="flex:2"><label>Name</label><input id="f_name" placeholder="e.g. North Cove Marina, NYC"></div>
+          <div><label>State</label><input id="f_state" placeholder="NY"></div>
+        </div>
+        <div class="row">
+          <div><label>Lat</label><input id="f_lat" type="number" step="0.0001" placeholder="40.712"></div>
+          <div><label>Lon</label><input id="f_lon" type="number" step="0.0001" placeholder="-74.017"></div>
+          <div><button class="btn sm sec" type="button" onclick="useLocation('f')" style="margin-top:22px">&#128205; Use current location</button></div>
+        </div>
+        <div class="row">
+          <div><label>Type</label><select id="f_type">
+            <option>harbor</option><option>inlet</option><option>icw</option>
+            <option>canal</option><option>hazard</option></select></div>
+          <div><label>All-weather?</label><select id="f_aw">
+            <option value="true">Yes &mdash; all-weather</option>
+            <option value="false">No &mdash; fair-weather only</option></select></div>
+        </div>
+        <label>Notes</label>
+        <textarea id="f_notes" class="notebox" placeholder="Your knowledge: approach, marina contacts, hazards, timing…"></textarea>
+        <div style="margin-top:12px">
+          <button class="btn sm" onclick="saveStop()">Save to master &rarr; GitHub</button>
+          <button class="btn sm sec" onclick="deleteStop()" id="delBtn" style="display:none">Delete this stop</button>
+          <button class="btn sm sec" onclick="clearStopForm()">Clear form</button>
+          <span class="muted" id="manageMsg"></span>
+        </div>
+      </div>
+    </details>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--teal);font-weight:600">GitHub connection settings</summary>
+      <div style="margin-top:10px">
+        <div class="row">
+          <div style="flex:2"><label>Repo (owner/name)</label><input id="ghRepo" placeholder="genius2go/delivery-planner"></div>
+          <div><label>Branch</label><input id="ghBranch" placeholder="main" value="main"></div>
+        </div>
+        <label>Path to master list</label><input id="ghPath" placeholder="stops.json" value="stops.json">
+        <label>Personal access token (repo scope) &mdash; stored on this device only</label>
+        <input id="ghToken" type="password" placeholder="ghp_...">
+        <div style="margin-top:10px">
+          <button class="btn sm" onclick="saveToken()">Save token to this device</button>
+          <button class="btn sm sec" onclick="loadMaster()">Reload master from GitHub</button>
+          <span class="muted" id="ghMsg"></span>
+        </div>
+      </div>
+    </details>
+  </div>
+
+</div>
+
+<script>
+const STOPS = [{"name":"Miami Beach / Sunset Harbour","lat":25.793,"lon":-80.141,"state":"FL","type":"harbor","allweather":true,"notes":"Sunset Harbour Yacht Club. Home base. Lincoln Rd walkable.","verify":false},{"name":"Boca Raton / Hillsboro Inlet","lat":26.257,"lon":-80.081,"state":"FL","type":"inlet","allweather":false,"notes":"When EXITING, keep close to the starboard/right side of the channel \u2014 bridge operator's advice (May 18, 2026) with waves breaking in the channel. Fair-weather inlet; respect a building swell.","verify":false},{"name":"Lake Worth / Palm Beach","lat":26.772,"lon":-80.044,"state":"FL","type":"inlet","allweather":true,"notes":"Lake Worth Inlet \u2014 deep, all-weather. Gulf Stream close to shore Palm Beach\u2192Canaveral; stacks up in NE wind.","verify":false},{"name":"Fort Pierce","lat":27.467,"lon":-80.317,"state":"FL","type":"inlet","allweather":true,"notes":"Often called best all-weather inlet on the East Coast. Downtown marina walkable. Natural mid-leg bailout ~110nm from Palm Beach.","verify":false},{"name":"Cape Canaveral / Port Canaveral","lat":28.408,"lon":-80.618,"state":"FL","type":"inlet","allweather":true,"notes":"Deep commercial inlet, easy all-weather, good fuel. Watch cruise-ship traffic + security zone.","verify":false},{"name":"St. Augustine","lat":29.892,"lon":-81.298,"state":"FL","type":"inlet","allweather":false,"notes":"Bar SHOALS and shifts \u2014 cross at/near high tide ONLY. Favor current ATONs over chart. City Marina downtown by Bridge of Lions.","verify":false},{"name":"Fernandina Beach","lat":30.671,"lon":-81.464,"state":"FL","type":"inlet","allweather":true,"notes":"Deep, well-marked inlet. Fuel + protected overnight. Used as fog-diversion before St. Aug. Good contingency.","verify":false},{"name":"Brunswick / St. Simons","lat":31.135,"lon":-81.497,"state":"GA","type":"harbor","allweather":true,"notes":"Brunswick Landing 'Velcro Marina.' ~130nm from St. Aug. WWII hurricane hole. Solid mid-leg bailout.","verify":false},{"name":"Hilton Head / Harbour Town","lat":32.139,"lon":-80.804,"state":"SC","type":"harbor","allweather":true,"notes":"Sea Pines. Harbourmaster Leslie (843) 363-8335. Rick: great food at the Country Club, walking distance. Weather bailout/fuel.","verify":false},{"name":"Charleston","lat":32.78,"lon":-79.925,"state":"SC","type":"harbor","allweather":true,"notes":"Deep, well-marked all-weather harbor. Natural multi-day weather hold, full services. 5+ ft tidal range \u2014 real current on arrival. WARNING (Rick): do NOT run the ICW between here and Southport \u2014 it's poorly documented, markers off by 30-40 yards from actual deep water (confirmed by infrared/heat survey). Run outside on this stretch.","verify":false},{"name":"Winyah Bay / Georgetown","lat":33.205,"lon":-79.187,"state":"SC","type":"inlet","allweather":false,"notes":"Sea buoy well offshore; jetties demand respect on building southerly. Workable but not a casual entry.","verify":false},{"name":"Southport / Cape Fear River","lat":33.915,"lon":-78.02,"state":"NC","type":"inlet","allweather":true,"notes":"Cape Fear River entrance deep/commercial. Safe Harbor South Harbour Village \u2014 ask for Bill Gregory (910) 352-8469. Joseph's Italian Bistro at marina; Rick's pick Home Run Place north of bridge. WARNING (Rick): do NOT run the ICW between here and Charleston \u2014 poorly documented, markers off by 30-40 yards from actual deep water (confirmed by infrared/heat survey). Run outside on this stretch.","verify":false},{"name":"Wrightsville / Masonboro Inlet","lat":34.18,"lon":-77.819,"state":"NC","type":"inlet","allweather":false,"notes":"Masonboro Inlet \u2014 enter mid-to-high tide. Check Aqua Map shoaling MM 293.7. Hybrid ICW route option here.","verify":false},{"name":"Beaufort / Morehead City","lat":34.72,"lon":-76.7,"state":"NC","type":"inlet","allweather":true,"notes":"Beaufort Inlet deep all-weather commercial. KEY staging point for the Hatteras rounding. Full services, easy to sit out weather. Morehead City Yacht Basin dockmaster (252) 726-6862.","verify":false},{"name":"Cape Hatteras (offshore rounding)","lat":35.22,"lon":-75.53,"state":"NC","type":"hazard","allweather":false,"notes":"NOT a stop \u2014 the critical offshore rounding. Gulf Stream close offshore; wind-against-current sea builds fast over Diamond Shoals. Do NOT leave Beaufort without a confirmed window.","verify":false},{"name":"Coinjock (ICW)","lat":36.349,"lon":-75.948,"state":"NC","type":"icw","allweather":true,"notes":"ICW MM 50, inside route. Dock EAST side (restaurant access). 32oz prime rib \u2014 call ahead (252) 453-3271. Tip dock hands in CASH not card (adds 20%).","verify":false},{"name":"Oregon Inlet","lat":35.772,"lon":-75.524,"state":"NC","type":"inlet","allweather":false,"notes":"Shoal and treacherous \u2014 treat as a position, not a reliable bailout.","verify":false},{"name":"Norfolk / Waterside (Hampton Roads)","lat":36.847,"lon":-76.293,"state":"VA","type":"harbor","allweather":true,"notes":"Waterside Marina downtown (757) 625-3625, new floating docks, MM 0. Heavy Navy/commercial traffic \u2014 they have right of way, monitor VHF 16. Bluewater Hampton backup (757) 723-6774.","verify":false},{"name":"Great Bridge Lock (ICW)","lat":36.724,"lon":-76.244,"state":"VA","type":"icw","allweather":true,"notes":"NB opens on the hour, SB at :30. Miss it by 3 min = wait an hour. Gilmerton/NS#7 RR bridge pair nearby \u2014 6kts, watch lights (green=clear, red=hold). 'The pair that nearly came down on you.'","verify":false},{"name":"Ocean City MD","lat":38.328,"lon":-75.091,"state":"MD","type":"inlet","allweather":false,"notes":"Notoriously shoal/dangerous in any onshore swell. Fair-weather ONLY.","verify":false},{"name":"Cape May NJ","lat":38.969,"lon":-74.908,"state":"NJ","type":"inlet","allweather":true,"notes":"Deep reliable inlet, the safety valve for the NJ coast. South Jersey Marina (609) 884-2400 \u2014 books up fast. Lobster House next door. Enter from ocean side.","verify":false},{"name":"Atlantic City NJ","lat":39.355,"lon":-74.418,"state":"NJ","type":"inlet","allweather":true,"notes":"~30nm past Cape May. Golden Nugget (big basin) or Kammerman's (quieter, family-run). Absecon Inlet. Safety: stay near marina/boardwalk after dark.","verify":false},{"name":"Barnegat Light NJ","lat":39.766,"lon":-74.11,"state":"NJ","type":"inlet","allweather":false,"notes":"MOST CRITICAL INLET. Previous incident here. Enter mid-FLOOD only, MORNING only, favor north jetty. Never on ebb, never afternoon, no NE swell. Bayview Harbor.","verify":false},{"name":"Manasquan NJ","lat":40.103,"lon":-74.034,"state":"NJ","type":"inlet","allweather":false,"notes":"Better than Barnegat but tight. One of the few workable NJ inlets.","verify":true},{"name":"New York Harbor / Sandy Hook","lat":40.467,"lon":-74.01,"state":"NY","type":"harbor","allweather":true,"notes":"Ambrose Channel \u2014 heavy ship traffic, right of way, monitor VHF 16. Time Sandy Hook for fair current.","verify":false},{"name":"Liberty Landing (NYC)","lat":40.711,"lon":-74.046,"state":"NJ","type":"harbor","allweather":true,"notes":"Jersey City, Liberty State Park. Calm basin, ferry to Manhattan. Dockmaster Janer (201) 985-8000. NYC overnight or weather bailout.","verify":false},{"name":"Port Washington NY (LI Sound)","lat":40.834,"lon":-73.722,"state":"NY","type":"harbor","allweather":true,"notes":"Manhasset Bay, protected. Municipal & Safe Harbor Capri. LIRR to Manhattan 35 min. Hell Gate runs hard \u2014 time the East River for fair current.","verify":false},{"name":"The Race / Plum Gut (LI Sound)","lat":41.23,"lon":-72.06,"state":"CT","type":"hazard","allweather":false,"notes":"NOT a stop \u2014 current gate at the east end of LI Sound. Runs hard; time for fair current.","verify":false},{"name":"Montauk NY","lat":41.072,"lon":-71.938,"state":"NY","type":"inlet","allweather":true,"notes":"Lake Montauk \u2014 straightforward entry, good fuel dock. ~130nm staging option between NJ and New England.","verify":false},{"name":"Block Island RI","lat":41.171,"lon":-71.578,"state":"RI","type":"harbor","allweather":true,"notes":"Great Salt Pond. Classic New England stop.","verify":true},{"name":"Newport RI","lat":41.487,"lon":-71.326,"state":"RI","type":"harbor","allweather":true,"notes":"Narragansett Bay \u2014 easy, well-marked entry. Home water for the New England end.","verify":false},{"name":"Cape Cod Canal","lat":41.745,"lon":-70.616,"state":"MA","type":"canal","allweather":true,"notes":"Connects Buzzards Bay & Cape Cod Bay. Currents top 4-5kts. Monitor VHF 13 entire transit, hail Control 16 / working 12/14. 10mph limit, no wake \u2014 they cite violators. Time for slack/fair current.","verify":false},{"name":"Buzzards Bay / Falmouth MA","lat":41.647,"lon":-70.636,"state":"MA","type":"harbor","allweather":true,"notes":"East Falmouth / Green Pond. New England base. Falmouth Marine & MacDougalls on Dockwa.","verify":false},{"name":"Nantucket MA","lat":41.285,"lon":-70.097,"state":"MA","type":"harbor","allweather":true,"notes":"Nantucket Boat Basin (508) 325-1350, 2-night min, concierge. Nantucket Sound builds with afternoon SW against ebb \u2014 arrive before midday.","verify":false}];
+
+const TRACKS = [{"name":"Track 22","pts":[[34.805,-76.6857],[34.7722,-76.685],[34.7578,-76.6734],[34.7385,-76.6815],[34.7261,-76.6939],[34.7129,-76.6929],[34.6968,-76.6712],[34.6858,-76.6684],[34.6667,-76.6712],[34.6683,-76.834],[34.6547,-76.9623],[34.6378,-77.0425],[34.6006,-77.1505],[34.5654,-77.217],[34.3367,-77.5817],[34.2928,-77.6379],[34.1689,-77.7695],[34.1716,-77.7943],[34.189,-77.818],[34.1918,-77.8265],[34.151,-77.857],[34.1191,-77.8705],[34.0604,-77.8893],[34.0487,-77.9259],[34.0323,-77.9355],[33.9727,-77.9485],[33.9572,-77.9564],[33.9222,-77.9988],[33.9149,-78.0148],[33.9175,-78.0282],[33.9149,-78.019],[33.9053,-78.0193],[33.8853,-78.0056],[33.8727,-78.0102],[33.8536,-78.026],[33.7192,-78.2598],[33.5119,-78.6064],[33.4057,-78.7357],[33.2617,-78.895],[33.0179,-79.1755],[32.9513,-79.2709],[32.9294,-79.3176],[32.8279,-79.4904],[32.7245,-79.7505],[32.7133,-79.7876],[32.7374,-79.8422],[32.7575,-79.8661],[32.7592,-79.9176],[32.7784,-79.9548],[32.7597,-79.9169],[32.7578,-79.8668],[32.7393,-79.8446],[32.7118,-79.79],[32.0818,-80.2827],[31.3879,-80.815],[31.0437,-81.0755],[30.714,-81.3089],[30.7067,-81.4596],[30.7023,-81.4631],[30.6883,-81.4595],[30.6715,-81.4661],[30.6885,-81.4601],[30.7027,-81.463],[30.7068,-81.4584],[30.7087,-81.4473],[30.7098,-81.3766],[30.3894,-81.283],[29.9732,-81.2578],[29.9162,-81.2666],[29.9064,-81.2959],[29.8981,-81.3068],[29.8922,-81.3093],[29.8996,-81.3052],[29.9069,-81.2942],[29.9159,-81.2571],[29.9147,-81.2521],[29.8992,-81.2412],[29.6502,-81.1289],[29.565,-81.0948],[29.456,-81.044],[29.3919,-81.0177],[29.2591,-80.9406],[28.9929,-80.7945],[28.8196,-80.6869],[28.6744,-80.6034],[28.456,-80.4843],[28.3988,-80.443],[28.381,-80.4401],[28.1983,-80.4328],[28.0141,-80.4014],[27.4743,-80.2801],[27.4618,-80.3175],[27.4674,-80.3219],[27.4669,-80.3279],[27.4675,-80.3223],[27.4613,-80.3177],[27.4703,-80.2963],[27.4757,-80.2589],[27.3376,-80.1986],[27.2258,-80.1538],[27.0368,-80.085],[26.8904,-80.04],[26.807,-80.0228],[26.7067,-80.0182],[26.5269,-80.0336],[26.344,-80.0565],[26.2246,-80.0676],[26.1983,-80.0748],[26.0831,-80.0939],[25.9052,-80.1022],[25.8093,-80.1129],[25.7601,-80.1229],[25.7677,-80.1407],[25.7918,-80.1523],[25.7959,-80.1455],[25.7938,-80.1512],[25.7966,-80.1606],[25.7911,-80.1811],[25.7717,-80.1844],[25.7689,-80.1955],[25.7722,-80.2003],[25.7688,-80.1951],[25.7727,-80.1782],[25.7656,-80.1618],[25.7653,-80.1452],[25.7709,-80.1408],[25.7871,-80.1506],[25.7849,-80.1549],[25.7817,-80.1492],[25.792,-80.152],[25.7957,-80.1455],[25.7921,-80.1523],[25.7663,-80.1398],[25.7576,-80.115],[25.7649,-80.0877],[25.7572,-79.9745],[25.7566,-79.8637],[25.7511,-79.8073],[25.7529,-79.7975],[25.7381,-79.5287],[25.7281,-79.4116],[25.7117,-79.3362],[25.7095,-79.3117],[25.7092,-79.3042],[25.726,-79.2947],[25.7095,-79.3033],[25.7094,-79.309],[25.7182,-79.4088],[25.7208,-79.5058],[25.7368,-79.7438],[25.7571,-79.9137],[25.7658,-80.0153],[25.7672,-80.0792],[25.7577,-80.1153],[25.7664,-80.1396],[25.789,-80.1517],[25.7918,-80.152],[25.7957,-80.1455],[25.7939,-80.1515],[25.7963,-80.1607],[25.7912,-80.1816],[25.7449,-80.1839],[25.707,-80.1919],[25.6844,-80.1861],[25.6757,-80.1615],[25.6839,-80.1859],[25.7107,-80.1914],[25.7461,-80.1838],[25.7917,-80.181],[25.7961,-80.1618],[25.7936,-80.1511],[25.7957,-80.1455],[25.7939,-80.1515],[25.7965,-80.1607],[25.7919,-80.1813],[25.7714,-80.1841],[25.7702,-80.1927],[25.7727,-80.1801],[25.7657,-80.1627],[25.7657,-80.1435],[25.7691,-80.1417],[25.7917,-80.1521],[25.7957,-80.1455],[25.7937,-80.1506],[25.7966,-80.1615],[25.7915,-80.1814],[25.7717,-80.1843],[25.77,-80.1892],[25.7689,-80.1973],[25.7778,-80.2061],[25.7687,-80.1972],[25.7728,-80.1799],[25.7656,-80.1629],[25.7655,-80.144],[25.7689,-80.1418],[25.7898,-80.1521],[25.7958,-80.1456],[25.7929,-80.1522],[25.7896,-80.152],[25.7708,-80.1404],[25.7895,-80.1517],[25.7919,-80.1521],[25.7958,-80.1455],[25.7925,-80.1524],[25.7661,-80.1389],[25.7578,-80.1177],[25.7633,-80.0945],[26.1822,-79.6555],[26.3144,-79.4781],[26.3819,-79.3977],[26.6002,-79.1148],[26.6691,-79.0343],[26.7024,-79.0003],[26.7039,-78.9935],[26.701,-78.9915],[26.7043,-78.9961],[26.7063,-78.9923],[26.7046,-78.9975],[26.7011,-78.9915],[26.7041,-78.9942],[26.7013,-79.0017],[26.6549,-79.0525],[26.4544,-79.2958],[26.3341,-79.4567],[26.2903,-79.5218],[26.2691,-79.5468],[26.1423,-79.6934],[26.0591,-79.7796],[25.9534,-79.8974],[25.842,-80.0116],[25.7901,-80.0728],[25.7627,-80.0966],[25.7582,-80.1169],[25.7673,-80.1405],[25.7898,-80.152],[25.7959,-80.1456],[25.7939,-80.1487],[25.7963,-80.1623],[25.7912,-80.1815],[25.7716,-80.1845],[25.77,-80.1889],[25.7689,-80.1974],[25.7774,-80.2051],[25.7688,-80.1974],[25.7727,-80.1807],[25.7654,-80.1613],[25.7673,-80.1412],[25.79,-80.1519],[25.7959,-80.1456],[25.7963,-80.1623],[25.7918,-80.1815],[25.7732,-80.1841],[25.7647,-80.1508],[25.7595,-80.1469],[25.7644,-80.1492],[25.7684,-80.1422],[25.7912,-80.1521],[25.7959,-80.1456],[25.7938,-80.1514],[25.7966,-80.1608],[25.7916,-80.1811],[25.7455,-80.184],[25.6617,-80.2042],[25.6048,-80.2096],[25.5376,-80.2109],[25.5269,-80.1958],[25.5244,-80.1752],[25.5289,-80.1891],[25.5276,-80.1963],[25.5391,-80.2108],[25.6402,-80.2034],[25.6502,-80.1977],[25.6568,-80.1889],[25.6535,-80.1805],[25.6529,-80.1472],[25.6458,-80.1332],[25.6472,-80.1291],[25.7588,-80.1236],[25.7669,-80.1402],[25.7896,-80.1519],[25.7959,-80.1457],[25.7961,-80.163],[25.7916,-80.1812],[25.7714,-80.1847],[25.7689,-80.1975],[25.7723,-80.2003],[25.7688,-80.1974],[25.7727,-80.1805],[25.7653,-80.1606],[25.7653,-80.1451],[25.7696,-80.142],[25.7829,-80.1494],[25.7907,-80.1812],[25.7961,-80.1626],[25.7937,-80.1485],[25.7957,-80.1455],[25.7966,-80.1621],[25.7921,-80.1813],[25.7711,-80.1854],[25.769,-80.1976],[25.7779,-80.2064],[25.7686,-80.197],[25.7724,-80.1776],[25.7655,-80.1616],[25.7647,-80.1507],[25.7598,-80.1467],[25.7643,-80.1492],[25.7693,-80.1418],[25.7918,-80.152],[25.7959,-80.1456],[25.7939,-80.1519],[25.7966,-80.1607],[25.7924,-80.1804],[25.7715,-80.1845],[25.7689,-80.1976],[25.7737,-80.201],[25.7687,-80.1974],[25.7728,-80.1805],[25.7655,-80.1614],[25.7651,-80.146],[25.7689,-80.1418],[25.7809,-80.1486],[25.7854,-80.1551],[25.7918,-80.152],[25.7957,-80.1455],[25.7938,-80.1517],[25.7964,-80.1672],[25.7937,-80.1511],[25.7957,-80.1455],[25.7939,-80.1509],[25.7966,-80.1615],[25.7922,-80.1811],[25.777,-80.1833],[25.7455,-80.1841],[25.7072,-80.1926],[25.6853,-80.1858],[25.6758,-80.1617],[25.6861,-80.1848],[25.6915,-80.1846],[25.6924,-80.1803],[25.6943,-80.1842],[25.7055,-80.1876],[25.7294,-80.1874],[25.7721,-80.1824],[25.765,-80.1591],[25.7656,-80.144],[25.7692,-80.142],[25.7915,-80.1522],[25.7957,-80.1455],[25.8122,-80.1486],[25.8163,-80.1409],[25.832,-80.1345],[25.845,-80.1344],[25.8486,-80.1433],[25.8547,-80.1464],[25.8831,-80.1432],[25.8604,-80.1454],[25.8572,-80.1482]]},{"name":"Track 23","pts":[[25.845,-80.1311],[25.8262,-80.1364],[25.8407,-80.135],[25.8307,-80.1351],[25.8155,-80.1415],[25.8123,-80.1486],[25.7957,-80.1455],[25.794,-80.1522],[25.7963,-80.1622],[25.7913,-80.1813],[25.7734,-80.1836],[25.7654,-80.1614],[25.7647,-80.1504],[25.7562,-80.1455],[25.7643,-80.1493],[25.766,-80.1416],[25.7688,-80.1413],[25.7917,-80.1521],[25.7957,-80.1455],[25.8123,-80.1485],[25.8166,-80.1405],[25.8323,-80.1342],[25.843,-80.134],[25.8471,-80.1361],[25.8504,-80.1453],[25.8547,-80.1464],[25.8831,-80.144],[25.8504,-80.1711],[25.8263,-80.1732],[25.7713,-80.1847],[25.7689,-80.1975],[25.778,-80.2063],[25.7687,-80.1973],[25.7737,-80.179],[25.7658,-80.1621],[25.7654,-80.1444],[25.7691,-80.1416],[25.7782,-80.1468],[25.7852,-80.1557],[25.792,-80.152],[25.7958,-80.1457],[25.793,-80.1524],[25.7684,-80.1417],[25.7635,-80.1494],[25.7559,-80.1457],[25.7651,-80.1512],[25.7654,-80.1613],[25.773,-80.1807],[25.769,-80.1975],[25.7778,-80.206],[25.7686,-80.1969],[25.7711,-80.1849],[25.782,-80.1808],[25.7916,-80.1811],[25.7963,-80.1618],[25.7937,-80.1513],[25.7957,-80.1455],[25.812,-80.1487],[25.8152,-80.1419],[25.8316,-80.1348],[25.8468,-80.1362],[25.8482,-80.1452],[25.8443,-80.1345],[25.8315,-80.1347],[25.8153,-80.1419],[25.8124,-80.1486],[25.7957,-80.1455],[25.7919,-80.1523],[25.7695,-80.1416],[25.7596,-80.124],[25.6823,-80.1204],[25.6021,-80.1197],[25.5855,-80.1277],[25.5698,-80.1306],[25.5412,-80.1448],[25.5097,-80.1441],[25.4673,-80.1638],[25.436,-80.1691],[25.3651,-80.1923],[25.1979,-80.3176],[25.1159,-80.3703],[25.0858,-80.4043],[25.0746,-80.4243],[25.0839,-80.4379],[25.0763,-80.4307],[25.076,-80.4248],[25.1134,-80.3436],[25.1119,-80.3188],[25.1143,-80.3144],[25.1123,-80.3189],[25.1154,-80.3391],[25.1109,-80.3515],[25.0574,-80.454],[25.0779,-80.4308],[25.0919,-80.4306],[25.0857,-80.4313],[25.0874,-80.4409],[25.0853,-80.4315],[25.0765,-80.4275],[25.0805,-80.4141],[25.0886,-80.3996],[25.1163,-80.3697],[25.2307,-80.2943],[25.3064,-80.2336],[25.3663,-80.1918],[25.38,-80.1874],[25.3848,-80.1917],[25.3844,-80.2243],[25.4074,-80.2433],[25.4255,-80.2489],[25.4588,-80.2471],[25.5227,-80.2388],[25.7394,-80.1847],[25.7723,-80.1823],[25.765,-80.1552],[25.7673,-80.1421],[25.7841,-80.149],[25.789,-80.145],[25.7888,-80.151],[25.7921,-80.152],[25.7957,-80.1455],[25.8123,-80.1485],[25.8165,-80.1408],[25.8327,-80.1345],[25.8444,-80.1342],[25.8491,-80.1446],[25.8444,-80.1344],[25.8317,-80.1347],[25.8153,-80.1419],[25.8124,-80.1486],[25.7957,-80.1455],[25.7928,-80.1524]]},{"name":"Return from FL","pts":[[25.7928,-80.1524],[25.7664,-80.1387],[25.7575,-80.1137],[25.7688,-80.0822],[25.8049,-80.0645],[26.0783,-80.0635],[26.6587,-80.0163],[26.7884,-80.0207],[26.8987,-80.0428],[26.9628,-80.0606],[27.2818,-80.1645],[27.4747,-80.2542],[27.4764,-80.2605],[27.4701,-80.2991],[27.4615,-80.3185],[27.4675,-80.3225],[27.4669,-80.3282],[27.4676,-80.3221],[27.4615,-80.3179],[27.4694,-80.3005],[27.4735,-80.2786],[27.4775,-80.2772],[27.4939,-80.2837],[28.0064,-80.3752],[28.0242,-80.3815],[28.0879,-80.3916],[28.2075,-80.4176],[28.3943,-80.4466],[28.4282,-80.4478],[28.5871,-80.5165],[28.6559,-80.5628],[28.9111,-80.705],[29.0557,-80.7945],[29.5122,-81.0303],[29.749,-81.1641],[29.8818,-81.2332],[29.9145,-81.2538],[29.9084,-81.2907],[29.9008,-81.3045],[29.8921,-81.3096],[29.8997,-81.3053],[29.9064,-81.2955],[29.9145,-81.2639],[29.9365,-81.2569],[30.1722,-81.211],[31.0068,-81.0302],[31.4586,-80.9229],[31.6415,-80.8479],[31.9038,-80.691],[32.0929,-80.5846],[32.1712,-80.5939],[32.226,-80.6323],[32.2607,-80.6791],[32.271,-80.6977],[32.2739,-80.7283],[32.271,-80.7362],[32.2565,-80.7506],[32.2505,-80.7532],[32.2453,-80.747],[32.2528,-80.753],[32.2724,-80.7344],[32.274,-80.7251],[32.269,-80.6924],[32.2243,-80.6302],[32.1523,-80.5824],[32.1475,-80.5898],[32.0979,-80.5849],[32.0985,-80.5809],[32.5969,-79.8985],[32.7086,-79.7945],[32.7135,-79.793],[32.7402,-79.8447],[32.7605,-79.8706],[32.7603,-79.9192],[32.7699,-79.9407],[32.7848,-79.9622],[32.7721,-79.9448],[32.7593,-79.9165],[32.7576,-79.8677],[32.7362,-79.8399],[32.7122,-79.787],[32.7398,-79.7159],[32.9125,-79.3289],[33.273,-78.8748],[33.532,-78.5978],[33.8534,-78.0262],[33.8744,-78.0086],[33.8877,-78.0062],[33.904,-78.0186],[33.9152,-78.0193],[33.9208,-78.0629],[33.9153,-78.0127],[33.9267,-77.9918],[33.9571,-77.9565],[33.972,-77.9486],[34.0302,-77.9367],[34.0491,-77.9251],[34.0601,-77.8892],[34.1496,-77.8577],[34.1914,-77.8267],[34.1891,-77.8183],[34.1716,-77.7973],[34.168,-77.7719],[34.1896,-77.7471],[34.2928,-77.5574],[34.6525,-76.7216],[34.6618,-76.699],[34.6668,-76.6742],[34.6862,-76.6675],[34.6965,-76.6706],[34.7136,-76.6931],[34.729,-76.6925],[34.7394,-76.6808],[34.7583,-76.6734],[34.7751,-76.6856],[34.8059,-76.6855],[34.8272,-76.6913],[34.8406,-76.6892],[34.8796,-76.6915],[34.8988,-76.6838],[34.9056,-76.6686],[34.9307,-76.6539],[34.9415,-76.6593],[34.9578,-76.68],[34.9695,-76.6838],[34.973,-76.6919],[34.9847,-76.6879],[35.0163,-76.6557],[35.1115,-76.4815],[35.1158,-76.4643],[35.1243,-76.3495],[35.1231,-76.3017],[35.1329,-76.2665],[35.1927,-76.1569],[35.2381,-76.0562],[35.2834,-76.0115],[35.4744,-75.8071],[35.4801,-75.7732],[35.5144,-75.6894],[35.5238,-75.6467],[35.5269,-75.6431],[35.5426,-75.6372],[35.6155,-75.6383],[35.6388,-75.6287],[35.6823,-75.635],[35.7032,-75.633],[35.7168,-75.6274],[35.7752,-75.5795],[35.7898,-75.5725],[35.7978,-75.582],[35.8426,-75.6069],[35.8401,-75.6168],[35.8441,-75.6223],[35.84,-75.6175],[35.843,-75.6067],[35.8854,-75.6268],[35.905,-75.6435],[35.9407,-75.659],[35.9511,-75.7097],[35.9388,-75.7441],[35.9975,-75.846],[36.1112,-75.8883],[36.1444,-75.8946],[36.1748,-75.8912],[36.2084,-75.9236],[36.2311,-75.9331],[36.2616,-75.9631],[36.2672,-75.9615],[36.2741,-75.9494],[36.2837,-75.9474],[36.2894,-75.9545],[36.2904,-75.9673],[36.3149,-75.9719],[36.3538,-75.9462],[36.3998,-75.9538],[36.4195,-75.9529],[36.4503,-75.9654],[36.4781,-76.0011],[36.558,-76.0303],[36.5919,-76.0507],[36.5966,-76.0598],[36.6026,-76.0596],[36.6182,-76.0487],[36.6292,-76.0535],[36.6372,-76.0529],[36.6435,-76.0593],[36.6691,-76.0622],[36.6773,-76.0688],[36.6851,-76.0655],[36.6949,-76.0693],[36.6995,-76.0755],[36.7124,-76.0821],[36.715,-76.095],[36.723,-76.1103],[36.7239,-76.1875],[36.7206,-76.2379],[36.7373,-76.2959],[36.7422,-76.2979],[36.7536,-76.2949],[36.7638,-76.2987],[36.7759,-76.2953],[36.7803,-76.308],[36.7908,-76.3017],[36.7971,-76.2928],[36.8053,-76.2905],[36.8233,-76.291],[36.8327,-76.2949],[36.839,-76.2931],[36.8476,-76.2991],[36.8746,-76.3331],[36.9123,-76.3387],[36.9541,-76.3356],[36.9653,-76.3527],[36.9839,-76.3571],[37.0065,-76.3385],[37.0182,-76.3417],[37.0078,-76.3385],[37.0027,-76.3236],[36.9968,-76.3178],[36.9963,-76.3071],[37.0382,-76.0973],[37.045,-76.0873],[37.0377,-76.0522],[37.0518,-75.9796],[37.0409,-75.9362],[37.1013,-75.8236],[37.2314,-75.7273],[37.5117,-75.5486],[37.7659,-75.3474],[37.9375,-75.2345],[38.0693,-75.1752],[38.3018,-75.0784],[38.3223,-75.0719],[38.3246,-75.0923],[38.3315,-75.0907],[38.324,-75.0917],[38.3237,-75.0773],[38.3449,-75.0446],[38.3499,-75.0411],[39.2411,-74.4618],[39.3455,-74.3993],[39.3614,-74.4035],[39.3744,-74.4119],[39.3782,-74.4174],[39.376,-74.4259],[39.3785,-74.4162],[39.3761,-74.4135],[39.3461,-74.398],[39.3658,-74.3625],[39.4237,-74.2845],[39.5495,-74.1954],[39.7404,-74.0719],[39.7465,-74.0752],[39.7667,-74.1017],[39.7588,-74.1155],[39.7548,-74.1131],[39.7582,-74.1157],[39.7665,-74.1005],[39.7578,-74.0885],[39.7683,-74.0802],[39.9716,-74.0354],[40.0534,-74.0203],[40.2374,-73.9703],[40.3412,-73.9575],[40.4086,-73.9641],[40.471,-73.9658],[40.4798,-73.9794],[40.4849,-74.0014],[40.4753,-74.0339],[40.4766,-74.0429],[40.4816,-74.0462],[40.5133,-74.0437],[40.5624,-74.0322],[40.6143,-74.0486],[40.6522,-74.0522],[40.6878,-74.0344],[40.7442,-74.0135],[40.7452,-74.0106],[40.745,-74.0127],[40.7532,-74.0109],[40.8025,-73.9823],[40.8541,-73.9474],[40.8606,-73.939],[40.8576,-73.9451],[40.7556,-74.0102],[40.7451,-74.0106],[40.7382,-74.0163],[40.7102,-74.0253],[40.7015,-74.0215],[40.6982,-74.0088],[40.705,-73.9968],[40.7103,-73.9753],[40.7274,-73.9673],[40.7419,-73.9647],[40.7701,-73.9392],[40.778,-73.9379],[40.7821,-73.9226],[40.7955,-73.9052],[40.8007,-73.8918],[40.7977,-73.8712],[40.8033,-73.8207],[40.8015,-73.7875],[40.8227,-73.779],[40.8415,-73.7593],[40.841,-73.7498],[40.8318,-73.7311],[40.8326,-73.7247],[40.835,-73.7226],[40.8319,-73.7321],[40.8374,-73.7387],[40.8534,-73.7502],[40.8598,-73.7494],[40.8737,-73.7321],[40.8894,-73.6883],[40.9005,-73.6793],[40.9122,-73.6629],[41.0172,-73.3413],[41.0262,-73.3258],[41.0296,-73.3107],[41.0293,-73.3227],[41.0356,-73.3364],[41.0453,-73.3439],[41.0517,-73.3411],[41.0552,-73.3379],[41.0742,-73.2863],[41.1083,-73.2212],[41.1227,-73.213],[41.1432,-73.2217],[41.1532,-73.2176],[41.1586,-73.211],[41.1536,-73.2172],[41.1428,-73.2219],[41.1354,-73.2168],[41.1351,-73.1811],[41.1282,-73.1233],[41.1377,-73.0548],[41.1708,-72.8863],[41.1777,-72.8224],[41.2038,-72.655],[41.2414,-72.5066],[41.266,-72.473],[41.2716,-72.4711],[41.2657,-72.4728],[41.2556,-72.4643],[41.2472,-72.4246],[41.2416,-72.2212],[41.2419,-72.1893],[41.2467,-72.1671],[41.2329,-72.0307],[41.2753,-71.7884],[41.3014,-71.666],[41.3278,-71.5148],[41.3677,-71.3395],[41.4261,-71.1411],[41.4323,-71.0583],[41.4428,-71.0221],[41.529,-70.8318],[41.6532,-70.6482],[41.6538,-70.6362],[41.6474,-70.6364],[41.6543,-70.6371],[41.6536,-70.6495],[41.6488,-70.6559],[41.6544,-70.6464],[41.6542,-70.6356],[41.648,-70.6359],[41.6534,-70.6353],[41.6542,-70.6467],[41.6514,-70.6555],[41.6455,-70.6594],[41.6139,-70.6725],[41.6008,-70.6717],[41.5331,-70.6947],[41.5212,-70.6919],[41.5196,-70.6798],[41.4936,-70.616],[41.4874,-70.5921],[41.4774,-70.5726],[41.4745,-70.5585],[41.4613,-70.5561],[41.4577,-70.5612],[41.4616,-70.5521],[41.459,-70.5365],[41.4406,-70.4908],[41.4098,-70.486],[41.3869,-70.4998],[41.4089,-70.4851],[41.4384,-70.4878],[41.4539,-70.5111],[41.4815,-70.565],[41.5199,-70.6802],[41.5198,-70.6903],[41.5293,-70.6962],[41.6412,-70.6601],[41.6523,-70.6496],[41.6537,-70.6363],[41.6474,-70.6364],[41.6534,-70.6354],[41.6524,-70.6504],[41.644,-70.6593],[41.5301,-70.6949],[41.5213,-70.6923],[41.4897,-70.594],[41.4398,-70.4896],[41.4303,-70.4867],[41.4072,-70.4869],[41.3893,-70.4991],[41.3896,-70.5078],[41.3869,-70.5103],[41.3893,-70.4974],[41.4065,-70.486],[41.4376,-70.4876],[41.4521,-70.5091],[41.4852,-70.5856],[41.5092,-70.6475],[41.5198,-70.6802],[41.5198,-70.69],[41.5243,-70.6936],[41.5288,-70.695],[41.6001,-70.6744],[41.6423,-70.6591],[41.6539,-70.6461],[41.6535,-70.6354],[41.6474,-70.6364]]}];
+let _map=null, _routeLayer=null, _trackLayer=null;
+function initMap(){
+  if(_map) return;
+  _map = L.map('map');
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:18}).addTo(_map);
+  // faint actual-track underlay
+  _trackLayer = L.layerGroup().addTo(_map);
+  TRACKS.forEach(t=>{
+    L.polyline(t.pts.map(p=>[p[0],p[1]]),
+      {color:'#2a8c91',weight:2,opacity:.35}).addTo(_trackLayer);
+  });
+  _routeLayer = L.layerGroup().addTo(_map);
+}
+function drawRoute(){
+  if(!_map) return;
+  if(_routeLayer) _routeLayer.clearLayers();
+  const pts = selected.map(i=>[STOPS[i].lat, STOPS[i].lon]).filter(p=>!isNaN(p[0])&&!isNaN(p[1]));
+  if(!pts.length) return;
+  L.polyline(pts,{color:'#9e6b1f',weight:3.5,opacity:.9}).addTo(_routeLayer);
+  selected.forEach((i,k)=>{
+    const s=STOPS[i]; if(isNaN(s.lat)) return;
+    const m=L.circleMarker([s.lat,s.lon],{radius:6,color:'#16242f',weight:2,
+      fillColor:s.userAdded?'#a23a22':'#c89a4a',fillOpacity:1}).addTo(_routeLayer);
+    m.bindPopup(`<b>${k+1}. ${s.name}</b>` + (s.notes?`<br><span style="font-size:12px">${s.notes}</span>`:''));
+  });
+  _map.fitBounds(L.latLngBounds(pts).pad(0.15));
+}
+// open-on-demand: init + size the map when the details opens
+document.getElementById('mapDetails').addEventListener('toggle', function(){
+  if(this.open){ initMap(); setTimeout(()=>{_map.invalidateSize(); drawRoute();},60); }
+});
+let selected = []; // array of indices into STOPS, in chosen order
+
+function typeTag(s){
+  if(s.userAdded)return '<span class="tag t-vf">added underway</span>';
+  if(s.type==='hazard')return '<span class="tag t-hz">hazard</span>';
+  if(s.verify)return '<span class="tag t-vf">verify</span>';
+  return s.allweather?'<span class="tag t-aw">all-weather</span>':'<span class="tag t-fw">fair-wx</span>';
+}
+
+function renderPicker(){
+  const p=document.getElementById('picker'); p.innerHTML='';
+  STOPS.forEach((s,i)=>{
+    const on=selected.includes(i);
+    const d=document.createElement('div');
+    d.className='stop'+(on?' on':'');
+    d.innerHTML=`<input type="checkbox" ${on?'checked':''}>
+      <div><div class="sn">${s.name}${typeTag(s)}</div>
+      <div class="st">${s.state} &middot; ${s.lat.toFixed(2)}, ${s.lon.toFixed(2)}</div></div>`;
+    d.onclick=(e)=>{ toggle(i); };
+    p.appendChild(d);
+  });
+}
+
+function corridorOrder(a,b){
+  // order by latitude; direction decides asc/desc
+  const nb=document.getElementById('dir').value==='nb';
+  return nb ? STOPS[a].lat-STOPS[b].lat : STOPS[b].lat-STOPS[a].lat;
+}
+
+function toggle(i){
+  if(selected.includes(i)) selected=selected.filter(x=>x!==i);
+  else { selected.push(i); selected.sort(corridorOrder); }
+  renderPicker(); renderSeq();
+}
+
+function addPort(){
+  const name=document.getElementById('newName').value.trim();
+  const lat=parseFloat(document.getElementById('newLat').value);
+  const lon=parseFloat(document.getElementById('newLon').value);
+  const note=document.getElementById('newNote').value.trim();
+  if(!name||isNaN(lat)||isNaN(lon)){
+    document.getElementById('addMsg').textContent=' — need a name and lat/lon';return;}
+  const s={name,lat,lon,state:'?',type:'inlet',allweather:false,
+    notes:note,verify:true,userAdded:true};
+  const i=STOPS.length; STOPS.push(s);
+  selected.push(i); selected.sort(corridorOrder);
+  document.getElementById('newName').value='';document.getElementById('newLat').value='';
+  document.getElementById('newLon').value='';document.getElementById('newNote').value='';
+  document.getElementById('addMsg').textContent=' — added "'+name+'" to this plan';
+  renderPicker(); renderSeq(); renderAddedPorts();
+}
+
+function renderSeq(){
+  const c=document.getElementById('seq'); c.innerHTML='';
+  document.getElementById('seqEmpty').style.display=selected.length?'none':'block';
+  selected.forEach((idx,pos)=>{
+    const s=STOPS[idx];
+    const d=document.createElement('div');
+    d.className='seq-item'; d.draggable=true; d.dataset.pos=pos;
+    d.innerHTML=`<span class="h">&#9776;</span><span class="nm">${pos+1}. ${s.name}</span>
+      <span class="x" title="remove">&times;</span>`;
+    d.querySelector('.x').onclick=()=>{selected.splice(pos,1);renderPicker();renderSeq();};
+    d.addEventListener('dragstart',e=>{d.classList.add('drag');e.dataTransfer.setData('t',pos)});
+    d.addEventListener('dragend',()=>d.classList.remove('drag'));
+    d.addEventListener('dragover',e=>e.preventDefault());
+    d.addEventListener('drop',e=>{e.preventDefault();
+      const from=+e.dataTransfer.getData('t'),to=pos;
+      const m=selected.splice(from,1)[0]; selected.splice(to,0,m);
+      renderPicker();renderSeq();});
+    c.appendChild(d);
+  });
+}
+
+function nm(a,b){
+  const R=3440.065,toR=x=>x*Math.PI/180;
+  const dLat=toR(b.lat-a.lat),dLon=toR(b.lon-a.lon);
+  const h=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  return R*2*Math.asin(Math.sqrt(h));
+}
+
+function generate(){
+  if(selected.length<2){alert('Pick at least 2 stops.');return;}
+  const range=+document.getElementById('range').value||999;
+  const speed=+document.getElementById('speed').value||25;
+  const vessel=document.getElementById('vessel').value||'(vessel)';
+  const client=document.getElementById('client').value||'';
+  let total=0,maxLeg=0,warns=0;
+  let legsHtml='';
+  for(let k=0;k<selected.length-1;k++){
+    const a=STOPS[selected[k]],b=STOPS[selected[k+1]];
+    const d=nm(a,b); total+=d; maxLeg=Math.max(maxLeg,d);
+    const hrs=d/speed;
+    const over=d>range;
+    if(over)warns++;
+    legsHtml+=`<div class="leg ${over?'warn':''}">
+      <div class="leg-n">${k+1}</div>
+      <div style="flex:1">
+        <div class="leg-rt">${a.name} &rarr; ${b.name}</div>
+        <div class="leg-meta"><span class="leg-dist">~${d.toFixed(0)} nm</span> &middot; ~${hrs.toFixed(1)} hrs @ ${speed} kts</div>
+        ${over?`<div class="leg-warn-txt">&#9888; Exceeds ${range} nm range by ${(d-range).toFixed(0)} nm — add an intermediate stop</div>`:''}
+        ${b.notes?`<div class="leg-note"><b>${b.name}:</b> ${b.notes}</div>`:''}
+      </div></div>`;
+  }
+  document.getElementById('planSumm').innerHTML=
+    `<div class="sc"><b>${total.toFixed(0)}</b><span>Total nm</span></div>
+     <div class="sc"><b>${selected.length-1}</b><span>Legs</span></div>
+     <div class="sc"><b>${(total/speed).toFixed(0)}</b><span>Hrs underway</span></div>
+     <div class="sc" style="border-left-color:${warns?'var(--rust)':'var(--ok)'}"><b>${warns}</b><span>Range warnings</span></div>`;
+  document.getElementById('planLegs').innerHTML=legsHtml;
+  const dir=document.getElementById('dir').value==='nb'?'Northbound':'Southbound';
+  document.getElementById('printhead').innerHTML=
+    `<h1>Passage Plan — ${vessel}</h1><div class="pm">${dir}${client?' · Capt. '+client:''} · range ${range} nm · cruise ${speed} kts · prepared ${new Date().toLocaleDateString()}</div>`;
+  document.getElementById('planCard').style.display='block';
+  document.getElementById('planCard').scrollIntoView({behavior:'smooth'});
+  if(_map && document.getElementById('mapDetails').open){ _map.invalidateSize(); drawRoute(); }
+}
+
+function exportPlan(){
+  const data={vessel:document.getElementById('vessel').value,
+    client:document.getElementById('client').value,
+    range:+document.getElementById('range').value,speed:+document.getElementById('speed').value,
+    dir:document.getElementById('dir').value,
+    generated:new Date().toISOString(),
+    stops:selected.map(i=>({name:STOPS[i].name,lat:STOPS[i].lat,lon:STOPS[i].lon,
+      notes:STOPS[i].notes||'',userAdded:!!STOPS[i].userAdded}))};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=(data.vessel||'plan').replace(/\s+/g,'_')+'_plan.json';a.click();
+}
+
+document.getElementById('dir').addEventListener('change',()=>{selected.sort(corridorOrder);renderPicker();renderSeq();});
+
+/* ---------- GitHub master-list sync ---------- */
+const GH_KEYS=['ghRepo','ghBranch','ghPath','ghToken'];
+function ghLoadSettings(){
+  GH_KEYS.forEach(k=>{
+    try{const v=localStorage.getItem('dp_'+k); if(v!==null)document.getElementById(k).value=v;}catch(e){}
+  });
+}
+function saveToken(){
+  const repo=document.getElementById('ghRepo').value.trim();
+  const msg=document.getElementById('ghMsg');
+  if(!repo){msg.textContent=' — enter the repo (owner/name) before saving';return;}
+  if(!repo.includes('/')){msg.textContent=' — repo should look like owner/name';return;}
+  GH_KEYS.forEach(k=>{
+    try{localStorage.setItem('dp_'+k, document.getElementById(k).value);}catch(e){}
+  });
+  msg.textContent=' — settings saved to this device';
+}
+function ghCfg(){
+  return {repo:document.getElementById('ghRepo').value.trim(),
+    branch:(document.getElementById('ghBranch').value.trim()||'main'),
+    path:(document.getElementById('ghPath').value.trim()||'stops.json'),
+    token:document.getElementById('ghToken').value.trim()};
+}
+
+async function loadMaster(){
+  const c=ghCfg(); const msg=document.getElementById('ghMsg');
+  if(!c.repo){msg.textContent=' — set a repo first';return;}
+  msg.textContent=' — loading…';
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/${c.path}?ref=${c.branch}`;
+    const h={'Accept':'application/vnd.github+json'};
+    if(c.token)h['Authorization']='Bearer '+c.token;
+    const r=await fetch(url,{headers:h});
+    if(!r.ok){msg.textContent=` — couldn't read ${c.path} (${r.status})`;return;}
+    const j=await r.json();
+    const txt=decodeURIComponent(escape(atob(j.content)));
+    const remote=JSON.parse(txt);
+    if(Array.isArray(remote)){
+      // replace baked-in STOPS with remote master, keep any unsaved user-added
+      const userAdded=STOPS.filter(s=>s.userAdded);
+      STOPS.length=0; remote.forEach(s=>STOPS.push(s)); userAdded.forEach(s=>STOPS.push(s));
+      selected=[]; renderPicker(); renderSeq(); renderAddedPorts();
+      if(typeof fillEditPicker==='function') fillEditPicker();
+      msg.textContent=` — loaded ${remote.length} stops from GitHub`;
+    } else { msg.textContent=' — file is not a stops array'; }
+  }catch(e){ msg.textContent=' — error: '+e.message; }
+}
+
+function renderAddedPorts(){
+  const box=document.getElementById('addedPorts');
+  const added=STOPS.map((s,i)=>({s,i})).filter(o=>o.s.userAdded);
+  if(!added.length){box.innerHTML='<p class="muted">No ports added underway yet. When you add one above, it appears here to review and commit.</p>';return;}
+  box.innerHTML='';
+  added.forEach(({s,i})=>{
+    const d=document.createElement('div');
+    d.className='seq-item'; d.style.flexWrap='wrap';
+    d.innerHTML=`<span class="nm">${s.name} <span class="muted">(${isNaN(s.lat)?'no pos':s.lat.toFixed(3)+','+s.lon.toFixed(3)})</span></span>
+      <button class="btn sm" data-i="${i}">Save to master &rarr; GitHub</button>
+      <textarea class="notebox" data-note="${i}" placeholder="Fuller notes for the master list (write at the dock)…">${s.notes||''}</textarea>`;
+    d.querySelector('button').onclick=()=>commitPort(i);
+    d.querySelector('textarea').oninput=(e)=>{STOPS[i].notes=e.target.value;};
+    box.appendChild(d);
+  });
+}
+
+async function commitPort(i){
+  const c=ghCfg(); const msg=document.getElementById('ghMsg');
+  const s=STOPS[i];
+  if(!c.token){msg.textContent=' — no token on this device (read-only)';return;}
+  if(!c.repo){msg.textContent=' — set a repo first';return;}
+  if(isNaN(s.lat)||isNaN(s.lon)){msg.textContent=` — give ${s.name} a lat/lon before saving to master`;return;}
+  msg.textContent=` — saving ${s.name}…`;
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/${c.path}`;
+    const h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token};
+    // read current file for SHA + content
+    const rg=await fetch(url+`?ref=${c.branch}`,{headers:h});
+    let master=[],sha=undefined;
+    if(rg.ok){const j=await rg.json();sha=j.sha;
+      master=JSON.parse(decodeURIComponent(escape(atob(j.content))));}
+    // append the cleaned port (drop the userAdded flag once it's master)
+    const clean={name:s.name,lat:s.lat,lon:s.lon,state:s.state||'?',
+      type:s.type||'inlet',allweather:!!s.allweather,notes:s.notes||'',verify:true};
+    master.push(clean);
+    const body={message:`Add port: ${s.name}`,branch:c.branch,
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(master,null,1))))};
+    if(sha)body.sha=sha;
+    const rp=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify(body)});
+    if(!rp.ok){const er=await rp.text();msg.textContent=` — save failed (${rp.status})`;return;}
+    // mark as committed: drop userAdded so it's now a normal master stop
+    delete STOPS[i].userAdded;
+    renderPicker(); renderAddedPorts();
+    msg.textContent=` — ${s.name} committed to master list`;
+  }catch(e){ msg.textContent=' — error: '+e.message; }
+}
+
+// Shared writer: reads the LATEST master from GitHub, applies mutate(master),
+// writes it back. Reading fresh first prevents overwriting other devices' changes.
+async function writeMaster(mutate, commitMsg, msgEl){
+  const c=ghCfg(); const msg=msgEl||document.getElementById('ghMsg');
+  if(!c.token){msg.textContent=' — no token on this device (read-only)';return false;}
+  if(!c.repo){msg.textContent=' — set the repo in GitHub settings first';return false;}
+  msg.textContent=' — saving…';
+  try{
+    const url=`https://api.github.com/repos/${c.repo}/contents/${c.path}`;
+    const h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token};
+    const rg=await fetch(url+`?ref=${c.branch}`,{headers:h});
+    let master=[],sha=undefined;
+    if(rg.ok){const j=await rg.json();sha=j.sha;
+      master=JSON.parse(decodeURIComponent(escape(atob(j.content))));}
+    else if(rg.status!==404){msg.textContent=` — couldn't read master (${rg.status})`;return false;}
+    const result=mutate(master); // mutate may return a value (e.g. message)
+    const body={message:commitMsg,branch:c.branch,
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(master,null,1))))};
+    if(sha)body.sha=sha;
+    const rp=await fetch(url,{method:'PUT',headers:h,body:JSON.stringify(body)});
+    if(!rp.ok){msg.textContent=` — save failed (${rp.status}) — check token has write access`;return false;}
+    // sync local STOPS to the new master so the UI matches GitHub
+    STOPS.length=0; master.forEach(s=>STOPS.push(s));
+    return true;
+  }catch(e){ msg.textContent=' — error: '+e.message; return false; }
+}
+
+// -------- Manage stops (add / edit / delete) --------
+let editingIndex=-1; // -1 = adding new
+
+function fillEditPicker(){
+  const sel=document.getElementById('editPick');
+  const cur=sel.value;
+  sel.innerHTML='<option value="-1">+ Add a new stop</option>';
+  STOPS.forEach((s,i)=>{
+    const o=document.createElement('option');o.value=i;o.textContent=s.name;sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+function loadStopForm(){
+  const i=+document.getElementById('editPick').value;
+  editingIndex=i;
+  const del=document.getElementById('delBtn');
+  if(i<0){ clearStopForm(); del.style.display='none'; return; }
+  const s=STOPS[i];
+  document.getElementById('f_name').value=s.name||'';
+  document.getElementById('f_state').value=s.state||'';
+  document.getElementById('f_lat').value=isNaN(s.lat)?'':s.lat;
+  document.getElementById('f_lon').value=isNaN(s.lon)?'':s.lon;
+  document.getElementById('f_type').value=s.type||'inlet';
+  document.getElementById('f_aw').value=s.allweather?'true':'false';
+  document.getElementById('f_notes').value=s.notes||'';
+  del.style.display='inline-block';
+}
+
+function clearStopForm(){
+  ['f_name','f_state','f_lat','f_lon','f_notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f_type').value='inlet';
+  document.getElementById('f_aw').value='true';
+  editingIndex=-1;
+  document.getElementById('editPick').value='-1';
+  document.getElementById('delBtn').style.display='none';
+}
+
+function useLocation(prefix){
+  const msg=document.getElementById('manageMsg');
+  if(!navigator.geolocation){msg.textContent=' — this device has no location service';return;}
+  msg.textContent=' — getting location…';
+  navigator.geolocation.getCurrentPosition(
+    p=>{document.getElementById(prefix+'_lat').value=p.coords.latitude.toFixed(4);
+        document.getElementById(prefix+'_lon').value=p.coords.longitude.toFixed(4);
+        msg.textContent=' — location filled in';},
+    e=>{msg.textContent=` — location unavailable (`+e.message+`)`;},
+    {enableHighAccuracy:true,timeout:10000});
+}
+
+async function saveStop(){
+  const msg=document.getElementById('manageMsg');
+  const name=document.getElementById('f_name').value.trim();
+  const lat=parseFloat(document.getElementById('f_lat').value);
+  const lon=parseFloat(document.getElementById('f_lon').value);
+  if(!name){msg.textContent=' — needs a name';return;}
+  if(isNaN(lat)||isNaN(lon)){msg.textContent=' — needs a lat and lon';return;}
+  const rec={name,lat,lon,
+    state:document.getElementById('f_state').value.trim()||'?',
+    type:document.getElementById('f_type').value,
+    allweather:document.getElementById('f_aw').value==='true',
+    notes:document.getElementById('f_notes').value.trim(),
+    verify:false};
+  const editingName = editingIndex>=0 ? STOPS[editingIndex].name : null;
+  const ok=await writeMaster(master=>{
+    if(editingName!==null){
+      const j=master.findIndex(s=>s.name===editingName);
+      if(j>=0) master[j]=rec; else master.push(rec);
+    } else { master.push(rec); }
+  }, (editingName!==null?`Edit stop: ${name}`:`Add stop: ${name}`), msg);
+  if(ok){
+    fillEditPicker(); renderPicker(); renderSeq();
+    msg.textContent=` — "${name}" saved to master list`;
+    clearStopForm();
+  }
+}
+
+async function deleteStop(){
+  const msg=document.getElementById('manageMsg');
+  if(editingIndex<0){msg.textContent=' — pick a stop to delete first';return;}
+  const nm=STOPS[editingIndex].name;
+  if(!confirm(`Remove "${nm}" from the master list? This commits to GitHub.`))return;
+  const ok=await writeMaster(master=>{
+    const j=master.findIndex(s=>s.name===nm);
+    if(j>=0) master.splice(j,1);
+  }, `Remove stop: ${nm}`, msg);
+  if(ok){
+    // also drop from current selection if present
+    selected=selected.filter(i=>STOPS[i] && STOPS[i].name!==nm);
+    fillEditPicker(); renderPicker(); renderSeq();
+    msg.textContent=` — "${nm}" removed from master list`;
+    clearStopForm();
+  }
+}
+
+ghLoadSettings();
+fillEditPicker();
+renderPicker();renderSeq();renderAddedPorts();
+</script>
+</body></html>
