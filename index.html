@@ -97,7 +97,7 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
     <h2>1 &middot; Client &amp; Boat</h2>
     <div class="row">
       <div><label>Client / Vessel</label><input id="vessel" placeholder="e.g. M/V Second Wind"></div>
-      <div><label>Captain hiring</label><input id="client" placeholder="e.g. John Smith"></div>
+      <div><label>Client / Owner</label><input id="client" placeholder="e.g. John Smith"></div>
     </div>
     <div class="row">
       <div><label>Max range per leg (nm)</label><input id="range" type="number" value="200"></div>
@@ -149,6 +149,32 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
       <p class="muted" style="margin:8px 0">Your chosen route (brass) over the actual tracks I've run this corridor (faint teal). Needs internet for the chart background.</p>
       <div id="map" style="height:440px;border:1px solid var(--line);border-radius:9px;margin-top:8px"></div>
     </details>
+  </div>
+
+  <div class="card noprint" id="debriefCard">
+    <h2>&#9997; Trip Debrief &mdash; capture what you learned</h2>
+    <p class="muted" style="margin-bottom:10px">After a trip, run through your stops. Only record what would change how you (or another captain) run it next time &mdash; skip the nice-to-know. Each note saves back to that stop in the master list.</p>
+    <label>Which stop are you debriefing?</label>
+    <select id="dbPick" onchange="loadDebrief()">
+      <option value="-1">— choose a stop —</option>
+    </select>
+    <div id="dbForm" style="display:none;margin-top:12px">
+      <div class="dbq"><label>How did the inlet / approach actually behave?</label>
+        <input id="db_approach" placeholder="e.g. breaking on the ebb, favored north side, easy"></div>
+      <div class="dbq"><label>What would you do differently next time?</label>
+        <input id="db_diff" placeholder="e.g. arrive before noon, skip on a NE swell"></div>
+      <div class="dbq"><label>Marina / fuel / dockage worth remembering?</label>
+        <input id="db_marina" placeholder="e.g. fuel dock easy, call ahead for slip, $X/ft"></div>
+      <div class="dbq"><label>Who did you deal with? (names, numbers)</label>
+        <input id="db_contact" placeholder="e.g. dockmaster Jim (555) 123-4567"></div>
+      <div class="dbq"><label>Hazard or timing the chart wouldn't tell you?</label>
+        <input id="db_hazard" placeholder="e.g. shoaling at MM X, time the bridge, current rips"></div>
+      <div style="margin-top:12px">
+        <button class="btn sm" onclick="appendDebrief()">Add debrief to this stop's notes &rarr; GitHub</button>
+        <span class="muted" id="dbMsg"></span>
+      </div>
+      <p class="muted" style="margin-top:8px">This appends a dated note to the stop's existing notes &mdash; it doesn't overwrite what's there.</p>
+    </div>
   </div>
 
   <div class="card noprint" id="masterCard">
@@ -248,6 +274,49 @@ function drawRoute(){
 document.getElementById('mapDetails').addEventListener('toggle', function(){
   if(this.open){ initMap(); setTimeout(()=>{_map.invalidateSize(); drawRoute();},60); }
 });
+
+// ---- Per-leg maps ----
+const _legMaps={}; // leg index -> Leaflet map
+function trackSliceForBounds(latMin,latMax,lonMin,lonMax){
+  // return track point-runs that fall within a padded bounding box of the leg
+  const padLat=(latMax-latMin)*0.25+0.1, padLon=(lonMax-lonMin)*0.25+0.1;
+  const inBox=p=>p[0]>=latMin-padLat&&p[0]<=latMax+padLat&&p[1]>=lonMin-padLon&&p[1]<=lonMax+padLon;
+  const runs=[];
+  TRACKS.forEach(t=>{
+    let run=[];
+    t.pts.forEach(p=>{
+      if(inBox(p)){ run.push(p); }
+      else { if(run.length>1) runs.push(run); run=[]; }
+    });
+    if(run.length>1) runs.push(run);
+  });
+  return runs;
+}
+function buildLegMap(k){
+  const a=STOPS[selected[k]], b=STOPS[selected[k+1]];
+  if(!a||!b||isNaN(a.lat)||isNaN(b.lat)) return;
+  const elId='legmap-'+k;
+  if(_legMaps[k]){ setTimeout(()=>_legMaps[k].invalidateSize(),50); return; }
+  const m=L.map(elId);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    {attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:18}).addTo(m);
+  // actual-track slice underneath
+  const latMin=Math.min(a.lat,b.lat), latMax=Math.max(a.lat,b.lat);
+  const lonMin=Math.min(a.lon,b.lon), lonMax=Math.max(a.lon,b.lon);
+  trackSliceForBounds(latMin,latMax,lonMin,lonMax).forEach(run=>{
+    L.polyline(run.map(p=>[p[0],p[1]]),{color:'#2a8c91',weight:2,opacity:.4}).addTo(m);
+  });
+  // the leg line + endpoints
+  L.polyline([[a.lat,a.lon],[b.lat,b.lon]],{color:'#9e6b1f',weight:3.5,opacity:.9}).addTo(m);
+  [[a,'A'],[b,'B']].forEach(([s,lbl])=>{
+    L.circleMarker([s.lat,s.lon],{radius:6,color:'#16242f',weight:2,
+      fillColor:s.userAdded?'#a23a22':'#c89a4a',fillOpacity:1}).addTo(m)
+      .bindPopup(`<b>${s.name}</b>`+(s.notes?`<br><span style="font-size:12px">${s.notes}</span>`:''));
+  });
+  m.fitBounds(L.latLngBounds([[a.lat,a.lon],[b.lat,b.lon]]).pad(0.3));
+  _legMaps[k]=m;
+  setTimeout(()=>m.invalidateSize(),60);
+}
 let selected = []; // array of indices into STOPS, in chosen order
 
 function typeTag(s){
@@ -330,6 +399,7 @@ function nm(a,b){
 
 function generate(){
   if(selected.length<2){alert('Pick at least 2 stops.');return;}
+  for(const k in _legMaps){ try{_legMaps[k].remove();}catch(e){} delete _legMaps[k]; }
   const range=+document.getElementById('range').value||999;
   const speed=+document.getElementById('speed').value||25;
   const vessel=document.getElementById('vessel').value||'(vessel)';
@@ -349,6 +419,10 @@ function generate(){
         <div class="leg-meta"><span class="leg-dist">~${d.toFixed(0)} nm</span> &middot; ~${hrs.toFixed(1)} hrs @ ${speed} kts</div>
         ${over?`<div class="leg-warn-txt">&#9888; Exceeds ${range} nm range by ${(d-range).toFixed(0)} nm — add an intermediate stop</div>`:''}
         ${b.notes?`<div class="leg-note"><b>${b.name}:</b> ${b.notes}</div>`:''}
+        <details class="noprint legmap-d" data-leg="${k}" style="margin-top:7px">
+          <summary style="cursor:pointer;font-size:12px;color:var(--teal);font-weight:600">&#9776; Leg map</summary>
+          <div class="legmap" id="legmap-${k}" style="height:260px;border:1px solid var(--line);border-radius:8px;margin-top:6px"></div>
+        </details>
       </div></div>`;
   }
   document.getElementById('planSumm').innerHTML=
@@ -357,9 +431,15 @@ function generate(){
      <div class="sc"><b>${(total/speed).toFixed(0)}</b><span>Hrs underway</span></div>
      <div class="sc" style="border-left-color:${warns?'var(--rust)':'var(--ok)'}"><b>${warns}</b><span>Range warnings</span></div>`;
   document.getElementById('planLegs').innerHTML=legsHtml;
+  // wire each per-leg map to build when its details opens
+  document.querySelectorAll('.legmap-d').forEach(det=>{
+    det.addEventListener('toggle',function(){
+      if(this.open) buildLegMap(+this.dataset.leg);
+    });
+  });
   const dir=document.getElementById('dir').value==='nb'?'Northbound':'Southbound';
   document.getElementById('printhead').innerHTML=
-    `<h1>Passage Plan — ${vessel}</h1><div class="pm">${dir}${client?' · Capt. '+client:''} · range ${range} nm · cruise ${speed} kts · prepared ${new Date().toLocaleDateString()}</div>`;
+    `<h1>Passage Plan — ${vessel}</h1><div class="pm">${dir}${client?' · Client: '+client:''} · range ${range} nm · cruise ${speed} kts · prepared ${new Date().toLocaleDateString()}</div>`;
   document.getElementById('planCard').style.display='block';
   document.getElementById('planCard').scrollIntoView({behavior:'smooth'});
   if(_map && document.getElementById('mapDetails').open){ _map.invalidateSize(); drawRoute(); }
@@ -423,6 +503,7 @@ async function loadMaster(){
       STOPS.length=0; remote.forEach(s=>STOPS.push(s)); userAdded.forEach(s=>STOPS.push(s));
       selected=[]; renderPicker(); renderSeq(); renderAddedPorts();
       if(typeof fillEditPicker==='function') fillEditPicker();
+      if(typeof fillDebriefPicker==='function') fillDebriefPicker();
       msg.textContent=` — loaded ${remote.length} stops from GitHub`;
     } else { msg.textContent=' — file is not a stops array'; }
   }catch(e){ msg.textContent=' — error: '+e.message; }
@@ -598,8 +679,62 @@ async function deleteStop(){
   }
 }
 
+// -------- Trip debrief --------
+function fillDebriefPicker(){
+  const sel=document.getElementById('dbPick'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="-1">— choose a stop —</option>';
+  STOPS.forEach((s,i)=>{
+    const o=document.createElement('option');o.value=i;o.textContent=s.name;sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+function loadDebrief(){
+  const i=+document.getElementById('dbPick').value;
+  const form=document.getElementById('dbForm');
+  if(i<0){ form.style.display='none'; return; }
+  ['db_approach','db_diff','db_marina','db_contact','db_hazard'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dbMsg').textContent='';
+  form.style.display='block';
+}
+async function appendDebrief(){
+  const msg=document.getElementById('dbMsg');
+  const i=+document.getElementById('dbPick').value;
+  if(i<0){msg.textContent=' — choose a stop first';return;}
+  const nm=STOPS[i].name;
+  const parts=[];
+  const grab=(id,label)=>{const v=document.getElementById(id).value.trim(); if(v)parts.push(`${label}: ${v}`);};
+  grab('db_approach','Approach'); grab('db_diff','Next time');
+  grab('db_marina','Marina/fuel'); grab('db_contact','Contact'); grab('db_hazard','Hazard/timing');
+  if(!parts.length){msg.textContent=' — nothing entered to save';return;}
+  const today=new Date().toISOString().slice(0,10);
+  const debrief=`[Debrief ${today}] `+parts.join('; ');
+  const ok=await writeMaster(master=>{
+    const j=master.findIndex(s=>s.name===nm);
+    if(j>=0){ master[j].notes=(master[j].notes?master[j].notes+' ':'')+debrief; }
+  }, `Debrief: ${nm}`, msg);
+  if(ok){
+    fillEditPicker(); fillDebriefPicker(); renderPicker(); renderSeq();
+    msg.textContent=` — debrief added to ${nm}`;
+    document.getElementById('dbForm').style.display='none';
+    document.getElementById('dbPick').value='-1';
+  }
+}
+
 ghLoadSettings();
 fillEditPicker();
+fillDebriefPicker();
 renderPicker();renderSeq();renderAddedPorts();
+
+// Auto-reload the live master list on startup so you always see your latest stops.
+// If no repo is configured (e.g. a shared/read-only copy), this silently does nothing
+// and the baked-in list stays as the offline fallback.
+(function autoReload(){
+  const c=ghCfg();
+  if(!c.repo) return; // nothing configured — use baked-in list
+  const msg=document.getElementById('ghMsg');
+  if(msg) msg.textContent=' — syncing latest stops…';
+  loadMaster();
+})();
 </script>
 </body></html>
