@@ -144,6 +144,7 @@ input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-rad
     <h2 class="noprint">Generated Plan</h2>
     <div class="summ" id="planSumm"></div>
     <div id="planLegs"></div>
+    <div id="ntmSection"></div>
     <details class="noprint" id="mapDetails" style="margin-top:14px">
       <summary style="cursor:pointer;font-size:13px;color:var(--teal);font-weight:700">&#9776; Show route map</summary>
       <p class="muted" style="margin:8px 0">Your chosen route (brass) over the actual tracks I've run this corridor (faint teal). Needs internet for the chart background.</p>
@@ -328,7 +329,13 @@ function typeTag(s){
 
 function renderPicker(){
   const p=document.getElementById('picker'); p.innerHTML='';
-  STOPS.forEach((s,i)=>{
+  const nb=document.getElementById('dir').value==='nb';
+  // show stops in geographic order (by latitude) matching travel direction,
+  // so new stops appear in their natural place, not dumped at the bottom.
+  const order=STOPS.map((s,i)=>i).sort((x,y)=>
+    nb ? STOPS[x].lat-STOPS[y].lat : STOPS[y].lat-STOPS[x].lat);
+  order.forEach(i=>{
+    const s=STOPS[i];
     const on=selected.includes(i);
     const d=document.createElement('div');
     d.className='stop'+(on?' on':'');
@@ -438,11 +445,48 @@ function generate(){
     });
   });
   const dir=document.getElementById('dir').value==='nb'?'Northbound':'Southbound';
+  renderNTM();
   document.getElementById('printhead').innerHTML=
     `<h1>Passage Plan — ${vessel}</h1><div class="pm">${dir}${client?' · Client: '+client:''} · range ${range} nm · cruise ${speed} kts · prepared ${new Date().toLocaleDateString()}</div>`;
   document.getElementById('planCard').style.display='block';
   document.getElementById('planCard').scrollIntoView({behavior:'smooth'});
   if(_map && document.getElementById('mapDetails').open){ _map.invalidateSize(); drawRoute(); }
+}
+
+// Coast Guard district by state for this corridor. Links point to the live
+// NavCen tools (verified current). The weekly-PDF model is being retired in
+// favor of the geospatial MSI app, so we link the interactive tools.
+const CG_DISTRICT={
+  FL:'7', GA:'7', SC:'7',                 // District 7: Southeast
+  NC:'5', VA:'5', MD:'5', DE:'5', NJ:'5', // District 5: Mid-Atlantic
+  NY:'1', CT:'1', RI:'1', MA:'1', ME:'1', NH:'1' // District 1: Northeast
+};
+const DISTRICT_NAME={'7':'District 7 (Southeast: FL–SC)',
+  '5':'District 5 (Mid-Atlantic: NC–NJ)','1':'District 1 (Northeast: NY–ME)'};
+
+function renderNTM(){
+  const box=document.getElementById('ntmSection'); if(!box) return;
+  // which districts does this route cross?
+  const ds=[...new Set(selected.map(i=>CG_DISTRICT[STOPS[i].state]).filter(Boolean))];
+  // order them by the route direction
+  const nb=document.getElementById('dir').value==='nb';
+  ds.sort((a,b)=> nb ? (a==='7'?-1:a==='5'&&b==='1'?-1:1) : (a==='1'?-1:a==='5'&&b==='7'?-1:1));
+  let rows=ds.map(d=>`<li style="margin:5px 0"><b>${DISTRICT_NAME[d]||('District '+d)}</b></li>`).join('');
+  box.innerHTML=`
+    <details class="noprint" style="margin-top:16px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--teal);font-weight:700">&#9873; Notice to Mariners &mdash; check before you go</summary>
+      <div style="margin-top:10px;font-size:13px;color:#34454f">
+        <p class="muted" style="margin-bottom:8px">Live navigation hazards, shoaling, closures, and missing/moved aids for the districts this route crosses (listed below). The Coast Guard now publishes these in an interactive map (updated every 15 min) rather than weekly PDFs &mdash; use the live tools to pick your waterway. Check shortly before departure and at each leg.</p>
+        <ul style="margin:0 0 10px 18px">${rows||'<li>No districts identified for this route.</li>'}</ul>
+        <p style="margin:8px 0 4px"><b>Live tools (all districts):</b></p>
+        <ul style="margin:0 0 0 18px">
+          <li style="margin:5px 0"><a href="https://navcen.uscg.gov/msi" target="_blank" rel="noopener">MSI Products map</a> &mdash; interactive LNM &amp; Light List by waterway</li>
+          <li style="margin:5px 0"><a href="https://navcen.uscg.gov/broadcast-notice-to-mariners" target="_blank" rel="noopener">Broadcast Notices</a> &mdash; near-real-time hazards by area</li>
+          <li style="margin:5px 0"><a href="https://navcen.uscg.gov/local-notices-to-mariners-by-cg-district" target="_blank" rel="noopener">LNM by district</a> &mdash; pick from the district map</li>
+          <li style="margin:5px 0"><a href="https://www.nauticalcharts.noaa.gov/publications/coast-pilot/index.html" target="_blank" rel="noopener">NOAA Coast Pilot</a> &mdash; detailed waterway descriptions</li>
+        </ul>
+      </div>
+    </details>`;
 }
 
 function exportPlan(){
