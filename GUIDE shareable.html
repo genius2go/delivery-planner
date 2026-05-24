@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Planner — Quick Guide</title><style>
+:root{--ink:#16242f;--paper:#f7f2e7;--paper2:#ece3cf;
+  --brass:#9e6b1f;--brass-lt:#d4a85a;--teal:#1a6b6f;--rust:#a23a22;--line:#d8c9a4;--ok:#3f7a3f;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#15212b;
+  background:var(--paper);line-height:1.65;font-size:16px;padding-bottom:50px}
+header{background:linear-gradient(160deg,#16242f,#27425a);color:#f7f2e7;
+  padding:28px 22px;border-bottom:5px solid var(--brass-lt)}
+.kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass-lt);font-weight:600}
+h1{font-size:27px;font-weight:700;margin-top:6px;color:#ffffff}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+h2{font-size:19px;color:var(--brass);margin:28px 0 6px;padding-bottom:6px;
+  border-bottom:2px solid var(--line);font-weight:700}
+.step{background:#ffffff;border:1px solid var(--line);border-left:4px solid var(--teal);
+  border-radius:9px;padding:13px 16px;margin:12px 0;color:#1f2d38}
+.step b{color:var(--teal)}
+.num{display:inline-block;background:var(--brass);color:#fff;font-weight:700;border-radius:50%;
+  width:24px;height:24px;text-align:center;line-height:24px;font-size:13px;margin-right:8px}
+.tip{background:var(--paper2);border:1px solid var(--line);border-left:4px solid var(--brass);
+  border-radius:8px;padding:11px 15px;margin:12px 0;font-size:14px;color:#3a2e1a}
+.tip b{color:var(--rust)}
+p{margin:10px 0;color:#15212b}
+.pnote{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 16px;margin:12px 0;color:#15212b}
+ul{margin:6px 0 6px 22px;color:#15212b}li{margin:5px 0;color:#15212b}
+.filelist{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 16px 12px 4px;margin:12px 0}
+code{background:#2a3a48;color:#f0e6cf;padding:1px 7px;border-radius:4px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+footer{margin-top:30px;padding-top:16px;border-top:2px solid var(--line);font-size:14px;color:#3a2e1a;font-style:italic}
+@media print{body{background:#fff}.step,.tip{box-shadow:none}header{background:#16242f !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<header><div class="wrap"><div class="kick">Delivery Planner &middot; Quick Guide</div>
+<h1>How To Use It</h1></div></header>
+<div class="wrap">
+
+<p class="pnote" style="margin-top:18px">A passage-planning tool for the Florida&ndash;New England corridor. Build a route from a curated list of stops, adapt it as conditions change, and produce a clean report for the boat owner.</p>
+
+<h2>Building a plan</h2>
+<div class="step"><span class="num">1</span><b>Client &amp; Boat:</b> enter the vessel, client/owner, the boat's max range per leg, and cruise speed. Choose north or southbound.</div>
+<div class="step"><span class="num">2</span><b>Pick Stops:</b> the list runs in geographic order. Tap the stops you want &mdash; they auto-sequence along the coast.</div>
+<div class="step"><span class="num">3</span><b>Sequence:</b> drag to reorder or remove stops as weather and plans change.</div>
+<div class="step"><span class="num">4</span><b>Generate Plan:</b> you get leg distances, time at your cruise speed, range warnings if a leg is too long, per-leg maps, and the Coast Guard Notice to Mariners districts to check. <b>Print / Save PDF</b> for a clean plan.</div>
+
+<h2>Underway</h2>
+<p class="pnote">Need an unplanned stop? The <b>Underway</b> box in the Sequence area adds a port (name + rough position + a note) and slots it into the route.</p>
+
+<h2>Recording the trip</h2>
+<div class="step"><span class="num">1</span>Each stop has a <b>&#10003; Confirm</b> button &mdash; tap it when you arrive, set the date, add a quick note.</div>
+<div class="step"><span class="num">2</span>At the end, open <b>Delivery Report</b>, add dates/crew/summary, and <b>Print / Save PDF</b> for the owner. Leave <b>Include per-stop notes</b> off for a clean client version.</div>
+
+<div class="tip"><b>Note:</b> this copy is read-only for the shared stop list &mdash; you can build plans, confirm stops, and print reports in a sitting. To save trips that persist across days and devices, you'd want your own copy with your own GitHub setup. Ask Peter.</div>
+
+<footer>Always navigate on current official charts, ATON, and live weather. This tool supplements planning &mdash; it never replaces them.</footer>
+</div></body></html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Planner — Owner's Guide</title><style>
+:root{--ink:#16242f;--paper:#f7f2e7;--paper2:#ece3cf;
+  --brass:#9e6b1f;--brass-lt:#d4a85a;--teal:#1a6b6f;--rust:#a23a22;--line:#d8c9a4;--ok:#3f7a3f;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#15212b;
+  background:var(--paper);line-height:1.65;font-size:16px;padding-bottom:50px}
+header{background:linear-gradient(160deg,#16242f,#27425a);color:#f7f2e7;
+  padding:28px 22px;border-bottom:5px solid var(--brass-lt)}
+.kick{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass-lt);font-weight:600}
+h1{font-size:27px;font-weight:700;margin-top:6px;color:#ffffff}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+h2{font-size:19px;color:var(--brass);margin:28px 0 6px;padding-bottom:6px;
+  border-bottom:2px solid var(--line);font-weight:700}
+.step{background:#ffffff;border:1px solid var(--line);border-left:4px solid var(--teal);
+  border-radius:9px;padding:13px 16px;margin:12px 0;color:#1f2d38}
+.step b{color:var(--teal)}
+.num{display:inline-block;background:var(--brass);color:#fff;font-weight:700;border-radius:50%;
+  width:24px;height:24px;text-align:center;line-height:24px;font-size:13px;margin-right:8px}
+.tip{background:var(--paper2);border:1px solid var(--line);border-left:4px solid var(--brass);
+  border-radius:8px;padding:11px 15px;margin:12px 0;font-size:14px;color:#3a2e1a}
+.tip b{color:var(--rust)}
+p{margin:10px 0;color:#15212b}
+.pnote{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 16px;margin:12px 0;color:#15212b}
+ul{margin:6px 0 6px 22px;color:#15212b}li{margin:5px 0;color:#15212b}
+.filelist{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 16px 12px 4px;margin:12px 0}
+code{background:#2a3a48;color:#f0e6cf;padding:1px 7px;border-radius:4px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+footer{margin-top:30px;padding-top:16px;border-top:2px solid var(--line);font-size:14px;color:#3a2e1a;font-style:italic}
+@media print{body{background:#fff}.step,.tip{box-shadow:none}header{background:#16242f !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<header><div class="wrap"><div class="kick">Delivery Planner &middot; Owner's Guide</div>
+<h1>How To Use It (Full Version)</h1></div></header>
+<div class="wrap">
+
+<p class="pnote" style="margin-top:18px">This is your complete reference. It covers building plans, using it underway, recording trips, and managing the master stop list &mdash; including the GitHub steps only your token-equipped devices can do.</p>
+
+<h2>One-time setup on each device</h2>
+<div class="step"><span class="num">1</span>Open the planner at your GitHub Pages URL.</div>
+<div class="step"><span class="num">2</span>Scroll to <b>Master List &rarr; GitHub connection settings</b>. Enter the repo (<code>genius2go/delivery-planner</code>), branch <code>main</code>, path <code>stops.json</code>, and your personal access token. Tap <b>Save token to this device</b>.</div>
+<div class="tip"><b>Important:</b> make sure the repo field is filled before saving &mdash; a blank repo is the one thing that silently breaks saving. The token lives only on that device; devices without it are read-only.</div>
+
+<h2>Building a plan</h2>
+<div class="step"><span class="num">1</span><b>Client &amp; Boat:</b> enter vessel, client/owner, the boat's max range per leg, and cruise speed. Pick direction (north or southbound).</div>
+<div class="step"><span class="num">2</span><b>Pick Stops:</b> the list is in geographic order. Tap the stops this client wants &mdash; they auto-sequence along the corridor.</div>
+<div class="step"><span class="num">3</span><b>Sequence:</b> drag to reorder, or remove stops, as conditions dictate. This is where you adapt when weather changes.</div>
+<div class="step"><span class="num">4</span><b>Generate Plan:</b> get leg-by-leg distances, hours, range warnings (red if a leg exceeds the boat's range), per-leg maps, and the Notice to Mariners districts for the route. Print/Save PDF for the client; Export saves a JSON copy.</div>
+
+<h2>Adding a stop to the master list (your devices only)</h2>
+<div class="step"><span class="num">1</span>In <b>Master List &rarr; Add, edit, or remove a stop</b>, leave the dropdown on "+ Add a new stop."</div>
+<div class="step"><span class="num">2</span>Fill in name, state, lat/lon (or tap <b>Use current location</b>), type, all-weather, and notes.</div>
+<div class="step"><span class="num">3</span>Tap <b>Save to master &rarr; GitHub</b>. It commits to <code>stops.json</code> and appears everywhere on next load.</div>
+<div class="tip">To <b>edit or delete</b> a stop, pick it from the same dropdown, change the fields (or tap Delete), and save. This is how you build out notes over time &mdash; no editing raw files by hand.</div>
+
+<h2>Underway &mdash; duck into an unplanned port</h2>
+<p class="pnote">In the Sequence area, the <b>Underway</b> box lets you add a port that isn't on your list: name, rough position (or fix it later), quick note. It drops into the sequence in geographic order.</p>
+
+<h2>Recording the trip as it happens</h2>
+<div class="step"><span class="num">1</span>Each stop in your Sequence has a <b>&#10003; Confirm</b> button. When you pull in for the night, tap it, set the date (auto-fills today), add a quick note on how it went, and save. The stop turns green.</div>
+<div class="step"><span class="num">2</span>Every confirm saves to <code>active_trip.json</code> automatically &mdash; close the browser, switch devices, go offline; it resumes where you left off.</div>
+<div class="step"><span class="num">3</span>At the end, open <b>Delivery Report</b>, fill in dates/crew/summary. The stop log builds itself from your confirmed stops. Toggle <b>Include per-stop notes</b> off for a clean client report, on for your full record.</div>
+<div class="step"><span class="num">4</span><b>Save to trip log</b> archives it to <code>trips.json</code> and offers to clear the active trip for the next delivery.</div>
+<div class="tip">The <b>summary</b> always shows in the report (your client-facing overview). The <b>per-stop notes</b> are hidden unless you check the box &mdash; but they're always kept in your trip log regardless.</div>
+
+<h2>Files in your repo</h2>
+<ul class="filelist">
+<li><code>index.html</code> &mdash; the app itself</li>
+<li><code>stops.json</code> &mdash; your master stop list (the knowledge base)</li>
+<li><code>trips.json</code> &mdash; archive of completed deliveries (auto-created)</li>
+<li><code>active_trip.json</code> &mdash; the in-progress trip (auto-created, cleared when you finish)</li>
+</ul>
+
+<footer>Always navigate on current official charts, ATON, and live weather. This tool supplements planning &mdash; it never replaces them.</footer>
+</div></body></html>
