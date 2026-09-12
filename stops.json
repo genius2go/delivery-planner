@@ -358,5 +358,15 @@
   "allweather": true,
   "notes": "Bruce runs gas dock and transient slips (loaned me his Suburban in fall of 2024)",
   "verify": false
+ },
+ {
+  "name": "Atlantic Yacht Basin",
+  "lat": 36.72,
+  "lon": -76.2344,
+  "state": "VA",
+  "type": "icw",
+  "allweather": true,
+  "notes": "Right next to Great Bridge bridge in Chesapeake, VA (located on the A&C Canal of the Intracoastal Waterway)",
+  "verify": false
  }
 ]
