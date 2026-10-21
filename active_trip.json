@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T14:41:44.414Z",
+ "updated": "2026-10-21T14:42:25.227Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -24,6 +24,10 @@
   "Buzzards Bay / Falmouth MA": {
    "date": "2026-10-15",
    "note": "Left Falmouth around 8:15 am, Buzzards Bay was rough, finally calmed down at Point Judith (wind from the N)"
+  },
+  "The Race / Plum Gut (LI Sound)": {
+   "date": "2026-10-15",
+   "note": "Came through without any issues (was calm)"
   }
  }
 }
