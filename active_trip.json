@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T14:42:25.227Z",
+ "updated": "2026-10-21T14:44:23.824Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -28,6 +28,14 @@
   "The Race / Plum Gut (LI Sound)": {
    "date": "2026-10-15",
    "note": "Came through without any issues (was calm)"
+  },
+  "Liberty Landing (NYC)": {
+   "date": "2026-10-15",
+   "note": "Easy run once in Long Island Sound. Predicted to be nasty the next couple of days (will sit)"
+  },
+  "Cape May NJ": {
+   "date": "2026-10-18",
+   "note": "Rough coming out of Verrazano, 5 foot following seas all the way south"
   }
  }
 }
