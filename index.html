@@ -623,8 +623,9 @@ function nm(a,b){
   return R*2*Math.asin(Math.sqrt(h));
 }
 
-function generate(){
-  if(selected.length<2){alert('Pick at least 2 stops.');return;}
+function generate(opts){
+  opts=opts||{};
+  if(selected.length<2){ if(!opts.auto) alert('Pick at least 2 stops.'); return; }
   for(const k in _legMaps){ try{_legMaps[k].remove();}catch(e){} delete _legMaps[k]; }
   const range=+document.getElementById('range').value||999;
   const speed=+document.getElementById('speed').value||25;
@@ -674,7 +675,7 @@ function generate(){
   document.getElementById('printhead').innerHTML=
     `<h1>Passage Plan — ${vessel}</h1><div class="pm">${dir}${client?' · Client: '+client:''} · range ${range} nm · cruise ${speed} kts · prepared ${new Date().toLocaleDateString()}</div>`;
   document.getElementById('planCard').style.display='block';
-  document.getElementById('planCard').scrollIntoView({behavior:'smooth'});
+  if(!opts.auto) document.getElementById('planCard').scrollIntoView({behavior:'smooth'});
   if(_map && document.getElementById('mapDetails').open){ _map.invalidateSize(); drawRoute(); }
 }
 
@@ -873,6 +874,8 @@ function applyTrip(p){
   renderPicker(); renderSeq(); renderAddedPorts();
   if(typeof fillEditPicker==='function') fillEditPicker();
   if(typeof fillDebriefPicker==='function') fillDebriefPicker();
+  // rebuild the plan automatically so a resumed trip opens with its plan showing
+  if(selected.length>=2){ try{ generate({auto:true}); }catch(e){} }
 }
 
 function setSync(state,detail){ syncState=state; syncDetail=detail||''; renderBanner(); }
