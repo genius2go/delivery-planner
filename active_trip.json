@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T14:44:23.824Z",
+ "updated": "2026-10-21T16:27:27.422Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -37,5 +37,31 @@
    "date": "2026-10-18",
    "note": "Rough coming out of Verrazano, 5 foot following seas all the way south"
   }
+ },
+ "underway": [],
+ "slow": {
+  "Norfolk / Waterside (Hampton Roads)|Great Bridge Lock (ICW)": [
+   {
+    "label": "Great Bridge Lock",
+    "nm": 7,
+    "kts": ""
+   }
+  ]
+ },
+ "setup": {
+  "vessel": "",
+  "client": "",
+  "range": "200",
+  "speed": "25",
+  "dir": "nb"
+ },
+ "report": {
+  "rp_vessel": "",
+  "rp_client": "",
+  "rp_dep": "",
+  "rp_arr": "",
+  "rp_route": "",
+  "rp_crew": "",
+  "rp_summary": ""
  }
 }
