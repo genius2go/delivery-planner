@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T22:00:52.525Z",
+ "updated": "2026-10-21T22:02:50.328Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -52,6 +52,13 @@
     "label": "ICW up until the Cape Fear River",
     "nm": 11,
     "kts": 6
+   }
+  ],
+  "Charleston|Hilton Head / Harbour Town": [
+   {
+    "label": "Skull Creek is no wake",
+    "nm": 3,
+    "kts": ""
    }
   ]
  },
