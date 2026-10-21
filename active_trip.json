@@ -1,0 +1,29 @@
+{
+ "updated": "2026-10-21T14:41:44.414Z",
+ "selected": [
+  "Buzzards Bay / Falmouth MA",
+  "The Race / Plum Gut (LI Sound)",
+  "Liberty Landing (NYC)",
+  "Cape May NJ",
+  "Ocean City MD",
+  "Norfolk / Waterside (Hampton Roads)",
+  "Great Bridge Lock (ICW)",
+  "Coinjock (ICW)",
+  "Beaufort / Morehead City",
+  "Wrightsville / Masonboro Inlet",
+  "Southport / Cape Fear River",
+  "Charleston",
+  "Hilton Head / Harbour Town",
+  "Brunswick / St. Simons",
+  "St. Augustine",
+  "Cape Canaveral / Port Canaveral",
+  "Fort Pierce",
+  "Miami Beach / Sunset Harbour"
+ ],
+ "confirmed": {
+  "Buzzards Bay / Falmouth MA": {
+   "date": "2026-10-15",
+   "note": "Left Falmouth around 8:15 am, Buzzards Bay was rough, finally calmed down at Point Judith (wind from the N)"
+  }
+ }
+}
