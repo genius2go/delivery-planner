@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T16:27:27.422Z",
+ "updated": "2026-10-21T22:00:52.525Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -46,8 +46,16 @@
     "nm": 7,
     "kts": ""
    }
+  ],
+  "Wrightsville / Masonboro Inlet|Southport / Cape Fear River": [
+   {
+    "label": "ICW up until the Cape Fear River",
+    "nm": 11,
+    "kts": 6
+   }
   ]
  },
+ "speeds": {},
  "setup": {
   "vessel": "",
   "client": "",
