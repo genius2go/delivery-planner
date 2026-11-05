@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T22:02:50.328Z",
+ "updated": "2026-11-05T00:17:15.624Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -68,7 +68,7 @@
   "client": "",
   "range": "200",
   "speed": "25",
-  "dir": "nb"
+  "dir": "sb"
  },
  "report": {
   "rp_vessel": "",
