@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T00:54:11.144Z",
+ "updated": "2026-11-05T00:54:40.389Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -64,6 +64,10 @@
   "Southport / Cape Fear River": {
    "date": "2026-10-28",
    "note": "One night at Safe Harbor Southport, next night at Morningstar Soutport"
+  },
+  "Charleston": {
+   "date": "2026-10-30",
+   "note": "Stayed at The Ashley Marina"
   }
  },
  "underway": [],
