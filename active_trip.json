@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T00:52:13.822Z",
+ "updated": "2026-11-05T00:53:27.714Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -60,6 +60,10 @@
   "Wrightsville / Masonboro Inlet": {
    "date": "2026-10-28",
    "note": "No problems traversing Carolina Beach inlet (shoaling wasn't bad)"
+  },
+  "Southport / Cape Fear River": {
+   "date": "2026-10-28",
+   "note": "One night at Safe Harbor Southport, next night at Morningstar Soutport"
   }
  },
  "underway": [],
