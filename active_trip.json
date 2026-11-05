@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T00:20:21.770Z",
+ "updated": "2026-11-05T00:44:59.266Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -40,6 +40,10 @@
   "Ocean City MD": {
    "date": "2026-10-25",
    "note": "fuel stop, easy in and easy out"
+  },
+  "Norfolk / Waterside (Hampton Roads)": {
+   "date": "2026-10-25",
+   "note": "Overnight stay"
   }
  },
  "underway": [],
