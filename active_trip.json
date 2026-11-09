@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T17:54:42.926Z",
+ "updated": "2026-11-09T17:55:35.533Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -84,6 +84,10 @@
   "Cape Canaveral / Port Canaveral": {
    "date": "2026-11-07",
    "note": "Fairly easy-in/easy-out (despite having to leave the boat to pay)"
+  },
+  "Fort Pierce": {
+   "date": "2026-11-07",
+   "note": "Tried a new marina, no floating dock, easier access to ocean"
   }
  },
  "underway": [],
