@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T17:52:58.164Z",
+ "updated": "2026-11-09T17:53:41.590Z",
  "selected": [
   "Buzzards Bay / Falmouth MA",
   "The Race / Plum Gut (LI Sound)",
@@ -76,6 +76,10 @@
   "Brunswick / St. Simons": {
    "date": "2026-11-06",
    "note": "Fairly long channel"
+  },
+  "St. Augustine": {
+   "date": "2026-11-06",
+   "note": "Tried a new marina, just on the left when entering the inlet"
   }
  },
  "underway": [],
